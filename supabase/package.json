@@ -1,0 +1,16 @@
+{
+  "name": "@my/supabase",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "supabase start",
+    "stop": "supabase stop",
+    "reset": "supabase db reset",
+    "status": "supabase status",
+    "migration:new": "supabase migration new",
+    "migration:up": "supabase migration up"
+  },
+  "devDependencies": {
+    "supabase": "^2.22.12"
+  }
+}

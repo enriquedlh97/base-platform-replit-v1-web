@@ -1,0 +1,1968 @@
+{
+  "openapi": "3.1.0",
+  "info": { "title": "Full Stack FastAPI Project", "version": "0.1.0" },
+  "paths": {
+    "/api/v1/login/test-token": {
+      "post": {
+        "tags": ["login"],
+        "summary": "Test Token",
+        "description": "Test access token",
+        "operationId": "login-test_token",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/UserPublic" } }
+            }
+          }
+        },
+        "security": [{ "SupabaseBearer": [] }]
+      }
+    },
+    "/api/v1/users/": {
+      "get": {
+        "tags": ["users"],
+        "summary": "Read Users",
+        "description": "Retrieve users.",
+        "operationId": "users-read_users",
+        "security": [{ "SupabaseBearer": [] }],
+        "parameters": [
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 0, "title": "Skip" }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 100, "title": "Limit" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/UsersPublic" } }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["users"],
+        "summary": "Create User",
+        "description": "Create new user.",
+        "operationId": "users-create_user",
+        "security": [{ "SupabaseBearer": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/UserCreate" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/UserPublic" } }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/users/me": {
+      "get": {
+        "tags": ["users"],
+        "summary": "Read User Me",
+        "description": "Get current user.",
+        "operationId": "users-read_user_me",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/UserPublic" } }
+            }
+          }
+        },
+        "security": [{ "SupabaseBearer": [] }]
+      },
+      "delete": {
+        "tags": ["users"],
+        "summary": "Delete User Me",
+        "description": "Delete own user.",
+        "operationId": "users-delete_user_me",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Message" } }
+            }
+          }
+        },
+        "security": [{ "SupabaseBearer": [] }]
+      },
+      "patch": {
+        "tags": ["users"],
+        "summary": "Update User Me",
+        "description": "Update own user.",
+        "operationId": "users-update_user_me",
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/UserUpdateMe" } }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/UserPublic" } }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        },
+        "security": [{ "SupabaseBearer": [] }]
+      }
+    },
+    "/api/v1/users/me/avatar": {
+      "post": {
+        "tags": ["users"],
+        "summary": "Upload Avatar Me",
+        "description": "Upload avatar for the current user.\n\nThe avatar will be uploaded to Supabase Storage in the 'avatars' bucket\nand the user's avatar_url will be updated in the database.\n\nExpected: multipart/form-data with 'avatar' field containing the image file.\nMax size: 5MB. Allowed types: image/jpeg, image/png, image/webp.",
+        "operationId": "users-upload_avatar_me",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": { "$ref": "#/components/schemas/Body_users-upload_avatar_me" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/UserPublic" } }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        },
+        "security": [{ "SupabaseBearer": [] }]
+      }
+    },
+    "/api/v1/users/{user_id}": {
+      "get": {
+        "tags": ["users"],
+        "summary": "Read User By Id",
+        "description": "Get a specific user by id.",
+        "operationId": "users-read_user_by_id",
+        "security": [{ "SupabaseBearer": [] }],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid", "title": "User Id" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/UserPublic" } }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["users"],
+        "summary": "Update User",
+        "description": "Update a user.",
+        "operationId": "users-update_user",
+        "security": [{ "SupabaseBearer": [] }],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid", "title": "User Id" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/UserUpdate" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/UserPublic" } }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["users"],
+        "summary": "Delete User",
+        "description": "Delete a user.",
+        "operationId": "users-delete_user",
+        "security": [{ "SupabaseBearer": [] }],
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid", "title": "User Id" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Message" } }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/utils/test-email/": {
+      "post": {
+        "tags": ["utils"],
+        "summary": "Test Email",
+        "description": "Test emails.",
+        "operationId": "utils-test_email",
+        "security": [{ "SupabaseBearer": [] }],
+        "parameters": [
+          {
+            "name": "email_to",
+            "in": "query",
+            "required": true,
+            "schema": { "type": "string", "format": "email", "title": "Email To" }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Message" } }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/utils/health-check/": {
+      "get": {
+        "tags": ["utils"],
+        "summary": "Health Check",
+        "operationId": "utils-health_check",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "type": "boolean", "title": "Response Utils-Health Check" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/items/": {
+      "get": {
+        "tags": ["items"],
+        "summary": "Read Items",
+        "description": "Retrieve items.",
+        "operationId": "items-read_items",
+        "security": [{ "SupabaseBearer": [] }],
+        "parameters": [
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 0, "title": "Skip" }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 100, "title": "Limit" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ItemsPublic" } }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["items"],
+        "summary": "Create Item",
+        "description": "Create new item.",
+        "operationId": "items-create_item",
+        "security": [{ "SupabaseBearer": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/ItemCreate" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ItemPublic" } }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/items/{id}": {
+      "get": {
+        "tags": ["items"],
+        "summary": "Read Item",
+        "description": "Get item by ID.",
+        "operationId": "items-read_item",
+        "security": [{ "SupabaseBearer": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid", "title": "Id" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ItemPublic" } }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["items"],
+        "summary": "Update Item",
+        "description": "Update an item.",
+        "operationId": "items-update_item",
+        "security": [{ "SupabaseBearer": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid", "title": "Id" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/ItemUpdate" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ItemPublic" } }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["items"],
+        "summary": "Delete Item",
+        "description": "Delete an item.",
+        "operationId": "items-delete_item",
+        "security": [{ "SupabaseBearer": [] }],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid", "title": "Id" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Message" } }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/clients/": {
+      "get": {
+        "tags": ["clients"],
+        "summary": "Get All Clients",
+        "description": "Get all clients.",
+        "operationId": "clients-get_all_clients",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": { "$ref": "#/components/schemas/Client" },
+                  "type": "array",
+                  "title": "Response Clients-Get All Clients"
+                }
+              }
+            }
+          }
+        },
+        "security": [{ "SupabaseBearer": [] }]
+      },
+      "post": {
+        "tags": ["clients"],
+        "summary": "Create Client",
+        "description": "Create new client.",
+        "operationId": "clients-create_client",
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/ClientCreate" } }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Client" } }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        },
+        "security": [{ "SupabaseBearer": [] }]
+      }
+    },
+    "/api/v1/clients/{client_id}": {
+      "put": {
+        "tags": ["clients"],
+        "summary": "Update Client",
+        "description": "Update an existing client.",
+        "operationId": "clients-update_client",
+        "security": [{ "SupabaseBearer": [] }],
+        "parameters": [
+          {
+            "name": "client_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid", "title": "Client Id" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/ClientUpdate" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Client" } }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["clients"],
+        "summary": "Get Client",
+        "description": "Get a specific client by client_id.",
+        "operationId": "clients-get_client",
+        "security": [{ "SupabaseBearer": [] }],
+        "parameters": [
+          {
+            "name": "client_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid", "title": "Client Id" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Client" } }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["clients"],
+        "summary": "Delete Client",
+        "description": "Delete a client by client_id.",
+        "operationId": "clients-delete_client",
+        "security": [{ "SupabaseBearer": [] }],
+        "parameters": [
+          {
+            "name": "client_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid", "title": "Client Id" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Client" } }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/appointments/": {
+      "get": {
+        "tags": ["appointments"],
+        "summary": "Get All Appointments",
+        "description": "Get all appointments.",
+        "operationId": "appointments-get_all_appointments",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": { "$ref": "#/components/schemas/Appointment" },
+                  "type": "array",
+                  "title": "Response Appointments-Get All Appointments"
+                }
+              }
+            }
+          }
+        },
+        "security": [{ "SupabaseBearer": [] }]
+      },
+      "post": {
+        "tags": ["appointments"],
+        "summary": "Create Appointment",
+        "description": "Create a new appointment.",
+        "operationId": "appointments-create_appointment",
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/AppointmentCreate" } }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Appointment" } }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        },
+        "security": [{ "SupabaseBearer": [] }]
+      }
+    },
+    "/api/v1/appointments/{appointment_id}": {
+      "put": {
+        "tags": ["appointments"],
+        "summary": "Update Appointment",
+        "description": "Update an existing appointment.",
+        "operationId": "appointments-update_appointment",
+        "security": [{ "SupabaseBearer": [] }],
+        "parameters": [
+          {
+            "name": "appointment_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid", "title": "Appointment Id" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/AppointmentUpdate" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Appointment" } }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["appointments"],
+        "summary": "Get Appointment",
+        "description": "Get a specific appointment by appointment_id.",
+        "operationId": "appointments-get_appointment",
+        "security": [{ "SupabaseBearer": [] }],
+        "parameters": [
+          {
+            "name": "appointment_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid", "title": "Appointment Id" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Appointment" } }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["appointments"],
+        "summary": "Delete Appointment",
+        "description": "Delete an appointment by appointment_id.",
+        "operationId": "appointments-delete_appointment",
+        "security": [{ "SupabaseBearer": [] }],
+        "parameters": [
+          {
+            "name": "appointment_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid", "title": "Appointment Id" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Appointment" } }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/providers/": {
+      "get": {
+        "tags": ["providers"],
+        "summary": "Read Providers",
+        "description": "Retrieve providers.",
+        "operationId": "providers-read_providers",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ProvidersPublic" } }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["providers"],
+        "summary": "Create Provider Endpoint",
+        "description": "Create new provider.",
+        "operationId": "providers-create_provider_endpoint",
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/ProviderCreate" } }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ProviderPublic" } }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/providers/{id}": {
+      "get": {
+        "tags": ["providers"],
+        "summary": "Read Provider",
+        "description": "Get provider by ID.",
+        "operationId": "providers-read_provider",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid", "title": "Id" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ProviderPublic" } }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["providers"],
+        "summary": "Update Provider",
+        "description": "Update a provider.",
+        "operationId": "providers-update_provider",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid", "title": "Id" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/ProviderUpdate" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ProviderPublic" } }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["providers"],
+        "summary": "Delete Provider Endpoint",
+        "description": "Delete a provider.",
+        "operationId": "providers-delete_provider_endpoint",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid", "title": "Id" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": { "type": "string" },
+                  "title": "Response Providers-Delete Provider Endpoint"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/services/": {
+      "get": {
+        "tags": ["services"],
+        "summary": "Read Services",
+        "description": "Retrieve services.",
+        "operationId": "services-read_services",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ServicesPublic" } }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["services"],
+        "summary": "Create Service Endpoint",
+        "description": "Create new service.",
+        "operationId": "services-create_service_endpoint",
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/ServiceCreate" } }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ServicePublic" } }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/services/{id}": {
+      "get": {
+        "tags": ["services"],
+        "summary": "Read Service",
+        "description": "Get service by ID.",
+        "operationId": "services-read_service",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid", "title": "Id" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ServicePublic" } }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["services"],
+        "summary": "Update Service",
+        "description": "Update a service.",
+        "operationId": "services-update_service",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid", "title": "Id" }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/ServiceUpdate" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ServicePublic" } }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["services"],
+        "summary": "Delete Service Endpoint",
+        "description": "Delete a service.",
+        "operationId": "services-delete_service_endpoint",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid", "title": "Id" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": { "type": "string" },
+                  "title": "Response Services-Delete Service Endpoint"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/categories/": {
+      "get": {
+        "tags": ["categories"],
+        "summary": "Read Categories",
+        "description": "Retrieve all categories.",
+        "operationId": "categories-read_categories",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": { "$ref": "#/components/schemas/CategoryPublic" },
+                  "type": "array",
+                  "title": "Response Categories-Read Categories"
+                }
+              }
+            }
+          }
+        },
+        "security": [{ "SupabaseBearer": [] }]
+      }
+    },
+    "/api/v1/events/": {
+      "get": {
+        "tags": ["events"],
+        "summary": "Read Events",
+        "description": "Retrieve events for the authenticated user.",
+        "operationId": "events-read_events",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": { "$ref": "#/components/schemas/EventPublic" },
+                  "type": "array",
+                  "title": "Response Events-Read Events"
+                }
+              }
+            }
+          }
+        },
+        "security": [{ "SupabaseBearer": [] }]
+      },
+      "post": {
+        "tags": ["events"],
+        "summary": "Create Event",
+        "description": "Create a new event for the authenticated user.",
+        "operationId": "events-create_event",
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/EventCreate" } }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/EventPublic" } }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        },
+        "security": [{ "SupabaseBearer": [] }]
+      }
+    },
+    "/api/v1/posts/": {
+      "get": {
+        "tags": ["posts"],
+        "summary": "Read Posts",
+        "operationId": "posts-read_posts",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": { "$ref": "#/components/schemas/PostPublic" },
+                  "type": "array",
+                  "title": "Response Posts-Read Posts"
+                }
+              }
+            }
+          }
+        },
+        "security": [{ "SupabaseBearer": [] }]
+      },
+      "post": {
+        "tags": ["posts"],
+        "summary": "Create Post",
+        "description": "Create a new post with optional image upload.\n\nThe image will be uploaded to Supabase Storage and the post will be created\nwith the image URL. The user_id is automatically set from the authenticated user.\n\nFile uploads are handled by the centralized FileUploadService for consistent\nvalidation, error handling, and storage management.",
+        "operationId": "posts-create_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": { "$ref": "#/components/schemas/Body_posts-create_post" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/PostPublic" } }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        },
+        "security": [{ "SupabaseBearer": [] }]
+      }
+    },
+    "/api/v1/projects/": {
+      "post": {
+        "tags": ["projects"],
+        "summary": "Create Project",
+        "description": "Create a new project.\n\nThe project will be created with the user_id automatically set from the authenticated user.",
+        "operationId": "projects-create_project",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": { "$ref": "#/components/schemas/Body_projects-create_project" }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ProjectPublic" } }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        },
+        "security": [{ "SupabaseBearer": [] }]
+      }
+    },
+    "/api/v1/private/users/": {
+      "post": {
+        "tags": ["private"],
+        "summary": "Create User",
+        "description": "Create a new user.",
+        "operationId": "private-create_user",
+        "requestBody": {
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/PrivateUserCreate" } }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/UserPublic" } }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Appointment": {
+        "properties": {
+          "appointment_date": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Appointment Date"
+          },
+          "price": { "type": "number", "title": "Price" },
+          "status": { "type": "string", "maxLength": 50, "title": "Status" },
+          "client_notes": {
+            "anyOf": [{ "type": "string", "maxLength": 255 }, { "type": "null" }],
+            "title": "Client Notes"
+          },
+          "internal_notes": {
+            "anyOf": [{ "type": "string", "maxLength": 255 }, { "type": "null" }],
+            "title": "Internal Notes"
+          },
+          "duration": { "type": "integer", "title": "Duration" },
+          "client_id": { "type": "string", "format": "uuid", "title": "Client Id" },
+          "provider_id": { "type": "string", "format": "uuid", "title": "Provider Id" },
+          "service_id": { "type": "string", "format": "uuid", "title": "Service Id" },
+          "id": { "type": "string", "format": "uuid", "title": "Id" }
+        },
+        "type": "object",
+        "required": ["price", "status", "duration", "client_id", "provider_id", "service_id"],
+        "title": "Appointment"
+      },
+      "AppointmentCreate": {
+        "properties": {
+          "appointment_date": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Appointment Date"
+          },
+          "price": { "type": "number", "title": "Price" },
+          "status": { "type": "string", "maxLength": 50, "title": "Status" },
+          "client_notes": {
+            "anyOf": [{ "type": "string", "maxLength": 255 }, { "type": "null" }],
+            "title": "Client Notes"
+          },
+          "internal_notes": {
+            "anyOf": [{ "type": "string", "maxLength": 255 }, { "type": "null" }],
+            "title": "Internal Notes"
+          },
+          "duration": { "type": "integer", "title": "Duration" },
+          "client_id": { "type": "string", "format": "uuid", "title": "Client Id" },
+          "provider_id": { "type": "string", "format": "uuid", "title": "Provider Id" },
+          "service_id": { "type": "string", "format": "uuid", "title": "Service Id" }
+        },
+        "type": "object",
+        "required": ["price", "status", "duration", "client_id", "provider_id", "service_id"],
+        "title": "AppointmentCreate"
+      },
+      "AppointmentUpdate": {
+        "properties": {
+          "appointment_date": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Appointment Date"
+          },
+          "price": { "type": "number", "title": "Price" },
+          "status": { "type": "string", "title": "Status" },
+          "client_notes": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Client Notes"
+          },
+          "internal_notes": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Internal Notes"
+          },
+          "duration": { "type": "integer", "title": "Duration" },
+          "client_id": { "type": "string", "format": "uuid", "title": "Client Id" },
+          "provider_id": { "type": "string", "format": "uuid", "title": "Provider Id" },
+          "service_id": { "type": "string", "format": "uuid", "title": "Service Id" }
+        },
+        "type": "object",
+        "required": [
+          "appointment_date",
+          "price",
+          "status",
+          "duration",
+          "client_id",
+          "provider_id",
+          "service_id"
+        ],
+        "title": "AppointmentUpdate"
+      },
+      "Body_posts-create_post": {
+        "properties": {
+          "title": { "type": "string", "maxLength": 255, "minLength": 1, "title": "Title" },
+          "content": { "anyOf": [{ "type": "string" }, { "type": "null" }], "title": "Content" },
+          "category_id": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Category Id"
+          },
+          "image": {
+            "anyOf": [{ "type": "string", "format": "binary" }, { "type": "null" }],
+            "title": "Image"
+          }
+        },
+        "type": "object",
+        "required": ["title"],
+        "title": "Body_posts-create_post"
+      },
+      "Body_projects-create_project": {
+        "properties": {
+          "name": { "type": "string", "maxLength": 255, "minLength": 1, "title": "Name" },
+          "description": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Description"
+          },
+          "number_of_days": {
+            "anyOf": [{ "type": "integer", "maximum": 200.0, "minimum": 1.0 }, { "type": "null" }],
+            "title": "Number Of Days"
+          },
+          "paid_project": { "type": "boolean", "title": "Paid Project", "default": false },
+          "street": { "anyOf": [{ "type": "string" }, { "type": "null" }], "title": "Street" },
+          "us_zip_code": {
+            "anyOf": [{ "type": "string", "maxLength": 10 }, { "type": "null" }],
+            "title": "Us Zip Code"
+          },
+          "project_type": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Project Type"
+          }
+        },
+        "type": "object",
+        "required": ["name"],
+        "title": "Body_projects-create_project"
+      },
+      "Body_users-upload_avatar_me": {
+        "properties": { "avatar": { "type": "string", "format": "binary", "title": "Avatar" } },
+        "type": "object",
+        "required": ["avatar"],
+        "title": "Body_users-upload_avatar_me"
+      },
+      "CategoryPublic": {
+        "properties": {
+          "id": { "type": "string", "format": "uuid", "title": "Id" },
+          "name": { "type": "string", "title": "Name" },
+          "created_at": { "type": "string", "format": "date-time", "title": "Created At" },
+          "updated_at": { "type": "string", "format": "date-time", "title": "Updated At" }
+        },
+        "type": "object",
+        "required": ["id", "name", "created_at", "updated_at"],
+        "title": "CategoryPublic"
+      },
+      "Client": {
+        "properties": {
+          "first_name": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "First Name"
+          },
+          "last_name": { "type": "string", "maxLength": 255, "minLength": 1, "title": "Last Name" },
+          "email": { "type": "string", "maxLength": 255, "format": "email", "title": "Email" },
+          "phone": { "type": "string", "maxLength": 255, "minLength": 1, "title": "Phone" },
+          "id": { "type": "string", "format": "uuid", "title": "Id" }
+        },
+        "type": "object",
+        "required": ["first_name", "last_name", "email", "phone"],
+        "title": "Client"
+      },
+      "ClientCreate": {
+        "properties": {
+          "first_name": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "First Name"
+          },
+          "last_name": { "type": "string", "maxLength": 255, "minLength": 1, "title": "Last Name" },
+          "email": { "type": "string", "maxLength": 255, "format": "email", "title": "Email" },
+          "phone": { "type": "string", "maxLength": 255, "minLength": 1, "title": "Phone" }
+        },
+        "type": "object",
+        "required": ["first_name", "last_name", "email", "phone"],
+        "title": "ClientCreate"
+      },
+      "ClientUpdate": {
+        "properties": {
+          "first_name": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "First Name"
+          },
+          "last_name": { "type": "string", "maxLength": 255, "minLength": 1, "title": "Last Name" },
+          "email": { "type": "string", "maxLength": 255, "format": "email", "title": "Email" },
+          "phone": { "type": "string", "maxLength": 255, "minLength": 1, "title": "Phone" }
+        },
+        "type": "object",
+        "required": ["first_name", "last_name", "email", "phone"],
+        "title": "ClientUpdate"
+      },
+      "EventCreate": {
+        "properties": {
+          "name": { "type": "string", "maxLength": 255, "minLength": 1, "title": "Name" },
+          "description": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Description"
+          },
+          "start_time": {
+            "anyOf": [{ "type": "string", "format": "date-time" }, { "type": "null" }],
+            "title": "Start Time"
+          },
+          "end_time": {
+            "anyOf": [{ "type": "string", "format": "date-time" }, { "type": "null" }],
+            "title": "End Time"
+          },
+          "status": { "type": "string", "maxLength": 50, "minLength": 1, "title": "Status" }
+        },
+        "type": "object",
+        "required": ["name", "status"],
+        "title": "EventCreate"
+      },
+      "EventPublic": {
+        "properties": {
+          "id": { "type": "string", "format": "uuid", "title": "Id" },
+          "name": { "type": "string", "title": "Name" },
+          "description": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Description"
+          },
+          "start_time": {
+            "anyOf": [{ "type": "string", "format": "date-time" }, { "type": "null" }],
+            "title": "Start Time"
+          },
+          "end_time": {
+            "anyOf": [{ "type": "string", "format": "date-time" }, { "type": "null" }],
+            "title": "End Time"
+          },
+          "status": { "type": "string", "title": "Status" },
+          "created_at": { "type": "string", "format": "date-time", "title": "Created At" },
+          "updated_at": { "type": "string", "format": "date-time", "title": "Updated At" },
+          "user_id": { "type": "string", "format": "uuid", "title": "User Id" }
+        },
+        "type": "object",
+        "required": ["id", "name", "status", "created_at", "updated_at", "user_id"],
+        "title": "EventPublic"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": { "$ref": "#/components/schemas/ValidationError" },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "ItemCreate": {
+        "properties": {
+          "title": { "type": "string", "maxLength": 255, "minLength": 1, "title": "Title" },
+          "description": {
+            "anyOf": [{ "type": "string", "maxLength": 255 }, { "type": "null" }],
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "required": ["title"],
+        "title": "ItemCreate"
+      },
+      "ItemPublic": {
+        "properties": {
+          "title": { "type": "string", "maxLength": 255, "minLength": 1, "title": "Title" },
+          "description": {
+            "anyOf": [{ "type": "string", "maxLength": 255 }, { "type": "null" }],
+            "title": "Description"
+          },
+          "id": { "type": "string", "format": "uuid", "title": "Id" },
+          "owner_id": { "type": "string", "format": "uuid", "title": "Owner Id" }
+        },
+        "type": "object",
+        "required": ["title", "id", "owner_id"],
+        "title": "ItemPublic"
+      },
+      "ItemUpdate": {
+        "properties": {
+          "title": {
+            "anyOf": [{ "type": "string", "maxLength": 255, "minLength": 1 }, { "type": "null" }],
+            "title": "Title"
+          },
+          "description": {
+            "anyOf": [{ "type": "string", "maxLength": 255 }, { "type": "null" }],
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "title": "ItemUpdate"
+      },
+      "ItemsPublic": {
+        "properties": {
+          "data": {
+            "items": { "$ref": "#/components/schemas/ItemPublic" },
+            "type": "array",
+            "title": "Data"
+          },
+          "count": { "type": "integer", "title": "Count" }
+        },
+        "type": "object",
+        "required": ["data", "count"],
+        "title": "ItemsPublic"
+      },
+      "Message": {
+        "properties": { "message": { "type": "string", "title": "Message" } },
+        "type": "object",
+        "required": ["message"],
+        "title": "Message"
+      },
+      "PostPublic": {
+        "properties": {
+          "id": { "type": "string", "format": "uuid", "title": "Id" },
+          "user_id": { "type": "string", "format": "uuid", "title": "User Id" },
+          "category_id": {
+            "anyOf": [{ "type": "string", "format": "uuid" }, { "type": "null" }],
+            "title": "Category Id"
+          },
+          "title": { "type": "string", "title": "Title" },
+          "content": { "anyOf": [{ "type": "string" }, { "type": "null" }], "title": "Content" },
+          "image_url": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Image Url"
+          },
+          "created_at": { "type": "string", "format": "date-time", "title": "Created At" },
+          "updated_at": { "type": "string", "format": "date-time", "title": "Updated At" },
+          "category_name": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Category Name"
+          },
+          "author": { "anyOf": [{ "$ref": "#/components/schemas/UserPublic" }, { "type": "null" }] }
+        },
+        "type": "object",
+        "required": ["id", "user_id", "title", "created_at", "updated_at"],
+        "title": "PostPublic"
+      },
+      "PrivateUserCreate": {
+        "properties": {
+          "email": { "type": "string", "title": "Email" },
+          "full_name": { "type": "string", "title": "Full Name" },
+          "is_verified": { "type": "boolean", "title": "Is Verified", "default": false }
+        },
+        "type": "object",
+        "required": ["email", "full_name"],
+        "title": "PrivateUserCreate"
+      },
+      "ProjectPublic": {
+        "properties": {
+          "id": { "type": "string", "format": "uuid", "title": "Id" },
+          "user_id": { "type": "string", "format": "uuid", "title": "User Id" },
+          "name": { "type": "string", "title": "Name" },
+          "description": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Description"
+          },
+          "number_of_days": {
+            "anyOf": [{ "type": "integer" }, { "type": "null" }],
+            "title": "Number Of Days"
+          },
+          "paid_project": { "type": "boolean", "title": "Paid Project" },
+          "street": { "anyOf": [{ "type": "string" }, { "type": "null" }], "title": "Street" },
+          "us_zip_code": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Us Zip Code"
+          },
+          "project_type": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Project Type"
+          },
+          "created_at": { "type": "string", "format": "date-time", "title": "Created At" },
+          "updated_at": { "type": "string", "format": "date-time", "title": "Updated At" }
+        },
+        "type": "object",
+        "required": ["id", "user_id", "name", "paid_project", "created_at", "updated_at"],
+        "title": "ProjectPublic"
+      },
+      "ProviderCreate": {
+        "properties": {
+          "public_name": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Public Name"
+          },
+          "email": { "type": "string", "maxLength": 255, "title": "Email" },
+          "accepts_online_bookings": {
+            "type": "boolean",
+            "title": "Accepts Online Bookings",
+            "default": false
+          },
+          "services": {
+            "additionalProperties": { "items": { "type": "string" }, "type": "array" },
+            "type": "object",
+            "title": "Services"
+          },
+          "photo_url": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Photo Url"
+          },
+          "working_hours": {
+            "additionalProperties": { "type": "string" },
+            "type": "object",
+            "title": "Working Hours"
+          }
+        },
+        "type": "object",
+        "required": ["public_name", "email"],
+        "title": "ProviderCreate"
+      },
+      "ProviderPublic": {
+        "properties": {
+          "public_name": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Public Name"
+          },
+          "email": { "type": "string", "maxLength": 255, "title": "Email" },
+          "accepts_online_bookings": {
+            "type": "boolean",
+            "title": "Accepts Online Bookings",
+            "default": false
+          },
+          "services": {
+            "additionalProperties": { "items": { "type": "string" }, "type": "array" },
+            "type": "object",
+            "title": "Services"
+          },
+          "photo_url": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Photo Url"
+          },
+          "working_hours": {
+            "additionalProperties": { "type": "string" },
+            "type": "object",
+            "title": "Working Hours"
+          },
+          "id": { "type": "string", "format": "uuid", "title": "Id" }
+        },
+        "type": "object",
+        "required": ["public_name", "email", "id"],
+        "title": "ProviderPublic"
+      },
+      "ProviderUpdate": {
+        "properties": {
+          "public_name": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Public Name"
+          },
+          "email": { "type": "string", "maxLength": 255, "title": "Email" },
+          "accepts_online_bookings": {
+            "type": "boolean",
+            "title": "Accepts Online Bookings",
+            "default": false
+          },
+          "services": {
+            "additionalProperties": { "items": { "type": "string" }, "type": "array" },
+            "type": "object",
+            "title": "Services"
+          },
+          "photo_url": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Photo Url"
+          },
+          "working_hours": {
+            "additionalProperties": { "type": "string" },
+            "type": "object",
+            "title": "Working Hours"
+          }
+        },
+        "type": "object",
+        "title": "ProviderUpdate"
+      },
+      "ProvidersPublic": {
+        "properties": {
+          "data": {
+            "items": { "$ref": "#/components/schemas/ProviderPublic" },
+            "type": "array",
+            "title": "Data"
+          },
+          "count": { "type": "integer", "title": "Count" }
+        },
+        "type": "object",
+        "required": ["data", "count"],
+        "title": "ProvidersPublic"
+      },
+      "ServiceCreate": {
+        "properties": {
+          "category": { "type": "string", "maxLength": 255, "minLength": 1, "title": "Category" },
+          "description": {
+            "anyOf": [{ "type": "string", "maxLength": 255 }, { "type": "null" }],
+            "title": "Description"
+          },
+          "duration": { "type": "integer", "minimum": 0.0, "title": "Duration" },
+          "price": { "type": "number", "minimum": 0.0, "title": "Price" }
+        },
+        "type": "object",
+        "required": ["category", "duration", "price"],
+        "title": "ServiceCreate"
+      },
+      "ServicePublic": {
+        "properties": {
+          "category": { "type": "string", "maxLength": 255, "minLength": 1, "title": "Category" },
+          "description": {
+            "anyOf": [{ "type": "string", "maxLength": 255 }, { "type": "null" }],
+            "title": "Description"
+          },
+          "duration": { "type": "integer", "minimum": 0.0, "title": "Duration" },
+          "price": { "type": "number", "minimum": 0.0, "title": "Price" },
+          "id": { "type": "string", "format": "uuid", "title": "Id" }
+        },
+        "type": "object",
+        "required": ["category", "duration", "price", "id"],
+        "title": "ServicePublic"
+      },
+      "ServiceUpdate": {
+        "properties": {
+          "category": { "type": "string", "maxLength": 255, "minLength": 1, "title": "Category" },
+          "description": {
+            "anyOf": [{ "type": "string", "maxLength": 255 }, { "type": "null" }],
+            "title": "Description"
+          },
+          "duration": { "type": "integer", "minimum": 0.0, "title": "Duration" },
+          "price": { "type": "number", "minimum": 0.0, "title": "Price" }
+        },
+        "type": "object",
+        "title": "ServiceUpdate"
+      },
+      "ServicesPublic": {
+        "properties": {
+          "data": {
+            "items": { "$ref": "#/components/schemas/ServicePublic" },
+            "type": "array",
+            "title": "Data"
+          },
+          "count": { "type": "integer", "title": "Count" }
+        },
+        "type": "object",
+        "required": ["data", "count"],
+        "title": "ServicesPublic"
+      },
+      "UserCreate": {
+        "properties": {
+          "email": { "type": "string", "maxLength": 255, "format": "email", "title": "Email" },
+          "is_active": { "type": "boolean", "title": "Is Active", "default": true },
+          "is_superuser": { "type": "boolean", "title": "Is Superuser", "default": false },
+          "full_name": {
+            "anyOf": [{ "type": "string", "maxLength": 255 }, { "type": "null" }],
+            "title": "Full Name"
+          },
+          "name": { "anyOf": [{ "type": "string" }, { "type": "null" }], "title": "Name" },
+          "about": { "anyOf": [{ "type": "string" }, { "type": "null" }], "title": "About" },
+          "avatar_url": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Avatar Url"
+          }
+        },
+        "type": "object",
+        "required": ["email"],
+        "title": "UserCreate"
+      },
+      "UserPublic": {
+        "properties": {
+          "email": { "type": "string", "maxLength": 255, "format": "email", "title": "Email" },
+          "is_active": { "type": "boolean", "title": "Is Active", "default": true },
+          "is_superuser": { "type": "boolean", "title": "Is Superuser", "default": false },
+          "full_name": {
+            "anyOf": [{ "type": "string", "maxLength": 255 }, { "type": "null" }],
+            "title": "Full Name"
+          },
+          "name": { "anyOf": [{ "type": "string" }, { "type": "null" }], "title": "Name" },
+          "about": { "anyOf": [{ "type": "string" }, { "type": "null" }], "title": "About" },
+          "avatar_url": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Avatar Url"
+          },
+          "id": { "type": "string", "format": "uuid", "title": "Id" }
+        },
+        "type": "object",
+        "required": ["email", "id"],
+        "title": "UserPublic"
+      },
+      "UserUpdate": {
+        "properties": {
+          "email": {
+            "anyOf": [
+              { "type": "string", "maxLength": 255, "format": "email" },
+              { "type": "null" }
+            ],
+            "title": "Email"
+          },
+          "is_active": { "type": "boolean", "title": "Is Active", "default": true },
+          "is_superuser": { "type": "boolean", "title": "Is Superuser", "default": false },
+          "full_name": {
+            "anyOf": [{ "type": "string", "maxLength": 255 }, { "type": "null" }],
+            "title": "Full Name"
+          },
+          "name": { "anyOf": [{ "type": "string" }, { "type": "null" }], "title": "Name" },
+          "about": { "anyOf": [{ "type": "string" }, { "type": "null" }], "title": "About" },
+          "avatar_url": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Avatar Url"
+          },
+          "password": {
+            "anyOf": [{ "type": "string", "maxLength": 40, "minLength": 8 }, { "type": "null" }],
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "title": "UserUpdate"
+      },
+      "UserUpdateMe": {
+        "properties": {
+          "full_name": {
+            "anyOf": [{ "type": "string", "maxLength": 255 }, { "type": "null" }],
+            "title": "Full Name"
+          },
+          "email": {
+            "anyOf": [
+              { "type": "string", "maxLength": 255, "format": "email" },
+              { "type": "null" }
+            ],
+            "title": "Email"
+          },
+          "name": { "anyOf": [{ "type": "string" }, { "type": "null" }], "title": "Name" },
+          "about": { "anyOf": [{ "type": "string" }, { "type": "null" }], "title": "About" },
+          "avatar_url": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Avatar Url"
+          }
+        },
+        "type": "object",
+        "title": "UserUpdateMe"
+      },
+      "UsersPublic": {
+        "properties": {
+          "data": {
+            "items": { "$ref": "#/components/schemas/UserPublic" },
+            "type": "array",
+            "title": "Data"
+          },
+          "count": { "type": "integer", "title": "Count" }
+        },
+        "type": "object",
+        "required": ["data", "count"],
+        "title": "UsersPublic"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": { "anyOf": [{ "type": "string" }, { "type": "integer" }] },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": { "type": "string", "title": "Message" },
+          "type": { "type": "string", "title": "Error Type" }
+        },
+        "type": "object",
+        "required": ["loc", "msg", "type"],
+        "title": "ValidationError"
+      }
+    },
+    "securitySchemes": { "SupabaseBearer": { "type": "http", "scheme": "bearer" } }
+  }
+}
