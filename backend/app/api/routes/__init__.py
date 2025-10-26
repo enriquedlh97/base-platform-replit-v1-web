@@ -1,0 +1,43 @@
+"""API routes module."""
+
+from app.api.routes import (
+    appointments,
+    categories,
+    clients,
+    conversations,
+    events,
+    items,
+    login,
+    messages,
+    posts,
+    private,
+    projects,
+    providers,
+    scheduling_connectors,
+    services,
+    users,
+    utils,
+    workspace_services,
+    workspaces,
+)
+
+__all__ = [
+    "appointments",
+    "categories",
+    "clients",
+    "conversations",
+    "events",
+    "items",
+    "login",
+    "messages",
+    "posts",
+    "private",
+    "projects",
+    "providers",
+    "scheduling_connectors",
+    "services",
+    "users",
+    "utils",
+    "workspace_services",
+    "workspaces",
+]

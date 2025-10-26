@@ -1,11 +1,117 @@
 # Backend - FastAPI Application
 
-This is the **unified backend** for the Base Platform cross-platform monorepo. It provides a single API layer that serves both the web (Next.js) and mobile (Expo) frontends, with a unified database architecture using Supabase for services and Alembic for schema management.
+This is the **unified backend** for the Base Platform scheduling assistant platform. It provides a single API layer that serves both web and mobile frontends, with a unified database architecture using Supabase for services and Alembic for schema management.
+
+## Current Status
+
+**Phase 1: Core Models & Authentication Foundation** ✅ **COMPLETE**
+
+All Phase 1 features are implemented and tested:
+- ✅ Workspace models and CRUD operations
+- ✅ Workspace services management
+- ✅ Scheduling connectors with activation/deactivation
+- ✅ Conversation and message tracking
+- ✅ Extended user profile fields
+- ✅ Database migrations applied
+- ✅ Comprehensive test suite (79 tests passing)
+- ✅ Code linting and formatting
+
+## Architecture Overview
+
+The backend follows a clean architecture pattern with clear separation of concerns:
+
+### Models (`app/models.py`)
+- **User**: Base user model with extended business profile fields (business_name, tagline, bio, phone, website, social_links, setup_completed)
+- **Workspace**: One workspace per user, globally unique handle, tone and timezone configuration
+- **WorkspaceService**: Services offered by the workspace (consultation, audit, workshop, etc.)
+- **SchedulingConnector**: External scheduling integration configs (Calendly, Square, etc.)
+- **Conversation**: Visitor conversations with the AI agent
+- **ConversationMessage**: Individual messages within conversations
+
+### API Routes
+- `/api/v1/workspaces/*` - Workspace management
+- `/api/v1/workspace-services/*` - Service management
+- `/api/v1/connectors/*` - Connector management
+- `/api/v1/conversations/*` - Conversation tracking
+- `/api/v1/messages/*` - Message management
+
+## Key Design Decisions
+
+### One Workspace Per User
+- Enforced via unique database constraint on `workspace.owner_id`
+- Simplifies MVP architecture
+- Future: Helper users can be added via separate table
+
+### Globally Unique Handles
+- Each workspace has a URL-friendly `handle` (e.g., "acme-consulting")
+- Validated with regex: `^[a-z0-9]+(?:-[a-z0-9]+)*$`
+- Used for public-facing workspace URLs
+
+### Flexible Connector Configuration
+- Connector configs stored as JSON for extensibility
+- Only one active connector per workspace at a time
+- Supports multiple connector types (Calendly, Square, AgendaPro)
+
+### Conversation Tracking
+- Messages support multiple channels (web, instagram, whatsapp, sms, messenger, chatgpt, phone)
+- Tags system for organization and filtering
+- Tracks time saved for analytics
 
 ## Requirements
 
 * [Docker](https://www.docker.com/).
 * [uv](https://docs.astral.sh/uv/) for Python package and environment management.
+* [Supabase](https://supabase.com) - Local development requires Supabase services running
+
+## Quick Start
+
+### 1. Start Supabase Services
+```bash
+cd supabase
+nvm use && yarn start
+```
+
+### 2. Start Backend (in separate terminal)
+```bash
+cd backend
+source .venv/bin/activate
+fastapi run app/main.py --reload
+```
+
+### 3. Verify
+- API available at: http://localhost:8000
+- API docs at: http://localhost:8000/api/v1/docs
+- Supabase dashboard at: http://localhost:54323
+
+## Development Workflow
+
+### Adding New Models
+1. Add SQLModel classes to `app/models.py`
+2. Create migration: `alembic revision --autogenerate -m "description"`
+3. Apply migration: `alembic upgrade head`
+4. Add routes in `app/api/routes/`
+5. Write tests in `app/tests/`
+6. Run tests: `bash scripts/test.sh`
+7. Run linting: `bash scripts/lint.sh`
+
+### Common Database Operations
+
+**Check database tables:**
+```python
+from app.core.db import engine
+from sqlalchemy import inspect
+inspector = inspect(engine)
+print(sorted(inspector.get_table_names()))
+```
+
+**Common Tables:**
+- `user` - Base user accounts
+- `workspaces` - User workspaces (Phase 1)
+- `workspace_services` - Services offered (Phase 1)
+- `scheduling_connectors` - External integrations (Phase 1)
+- `conversations` - Visitor conversations (Phase 1)
+- `conversation_messages` - Chat messages (Phase 1)
+- Plus legacy tables: `item`, `client`, `appointment`, `service`, `provider`, `event`, `post`, `project`, etc.
 
 ## Docker Compose
 
@@ -95,29 +201,59 @@ Nevertheless, if it doesn't detect a change but a syntax error, it will just sto
 
 ## Backend tests
 
-To test the backend run:
-
-```console
-$ bash ./scripts/test.sh
+### Running All Tests
+```bash
+bash ./scripts/test.sh
 ```
 
-The tests run with Pytest, modify and add tests to `./backend/app/tests/`.
+This runs:
+- All unit tests with pytest
+- Coverage reporting
+- Generates `htmlcov/index.html` for coverage analysis
 
-If you use GitHub Actions the tests will run automatically.
+**Current Test Status:** 79 tests passing, including:
+- 10 workspace tests
+- 5 workspace service tests
+- 7 scheduling connector tests
+- 8 conversation tests
+- Plus all legacy tests
 
-To test manually a specific test, start the unified stack from the root directory:
+### Test Structure
+Tests are organized in `app/tests/`:
+- `app/tests/api/routes/` - API endpoint tests
+- `app/tests/crud/` - Database operation tests
+- `app/tests/utils/` - Test utilities and fixtures
+
+**Fixtures Available:**
+- `client: TestClient` - FastAPI test client
+- `db: Session` - Database session with auto-rollback
+- `superuser_token_headers` - Auth headers for superuser
+- `normal_user_token_headers` - Auth headers for normal user
+
+### Running Specific Tests
+
+**Start Supabase first:**
 ```bash
+cd supabase && nvm use && yarn start
+```
+
+**Then in another terminal:**
+```bash
+cd backend
+source .venv/bin/activate
+pytest app/tests/api/routes/test_workspaces.py -v
+```
+
+### Docker-based Testing
+```bash
+# Start stack
 docker compose watch
-```
-or with
-```
-docker compose up db adminer prestart backend --watch
-```
 
-Then execute the specific test, (-s shows all logs and print statements):
-```bash
-docker compose exec backend \
-  pytest app/tests/test_deps.py::test_jit_user_creation -s
+# Run specific test
+docker compose exec backend pytest app/tests/api/routes/test_workspaces.py::test_create_workspace -v
+
+# Run with logs
+docker compose exec backend pytest app/tests/api/routes/test_workspaces.py::test_create_workspace -s
 ```
 
 ### Test running stack
@@ -305,3 +441,86 @@ uv run python scripts/seed_db.py
 - The script will insert sample data into your Supabase database
 - It is safe to run multiple times; it will not create duplicates
 - **Note**: Make sure your Supabase services are running (`cd supabase && yarn supa start`) before seeding
+
+## Troubleshooting
+
+### Database Connection Issues
+**Error:** `connection is bad: connection to server at "127.0.0.1", port 54322 failed`
+
+**Solution:** Make sure Supabase is running:
+```bash
+cd supabase
+nvm use
+yarn start
+```
+
+Check the output shows:
+```
+DB URL: postgresql://postgres:postgres@127.0.0.1:54322/postgres
+```
+
+### Migration Conflicts
+**Error:** `Multiple head revisions are present`
+
+**Solution:** Check migration heads:
+```bash
+alembic heads
+```
+
+Update the `down_revision` in your migration file to resolve conflicts.
+
+### Type Errors
+**Error:** `list[WorkspaceService](...)` - This syntax is incorrect
+
+**Solution:** Use Python's `list()` constructor, not type annotation:
+```python
+# Wrong
+services = list[WorkspaceService](session.exec(statement).all())
+
+# Correct
+services = list(session.exec(statement).all())
+```
+
+### Port Already in Use
+**Error:** `Port 8000 is already in use`
+
+**Solution:** Either stop the running process or change the port:
+```bash
+# Kill process on port 8000
+lsof -ti:8000 | xargs kill -9
+
+# Or use different port
+uvicorn app.main:app --port 8001 --reload
+```
+
+### Import Errors
+**Error:** `ModuleNotFoundError: No module named 'app'`
+
+**Solution:** Make sure you're in the right directory and environment:
+```bash
+cd backend
+source .venv/bin/activate
+python -m pytest  # Note: use python -m, not pytest directly
+```
+
+### Linting Issues
+**Auto-fix:** Most linting issues can be auto-fixed:
+```bash
+ruff check --fix app
+ruff format app
+```
+
+### Test Failures
+**Common causes:**
+1. Supabase not running - start it first
+2. Database migrations not applied - run `alembic upgrade head`
+3. Test database state - tests use auto-rollback, should be isolated
+
+**Debug tests:**
+```bash
+# Run single test with output
+pytest app/tests/api/routes/test_workspaces.py::test_create_workspace -v -s
+
+# Run with debugging
+pytest app/tests/api/routes/test_workspaces.py::test_create_workspace -v --pdb
+```
