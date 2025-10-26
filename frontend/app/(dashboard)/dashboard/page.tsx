@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -18,10 +20,23 @@ import { useWorkspace } from "@/lib/api/hooks/use-workspaces";
  *
  * Shows workspace overview and quick actions.
  * Displays basic stats and navigation to key areas.
+ * Redirects to setup if no workspace exists.
  */
 export default function DashboardPage() {
+  const router = useRouter();
   const { user, isLoading: authLoading } = useAuthStatus();
-  const { data: workspace, isLoading: workspaceLoading } = useWorkspace();
+  const {
+    data: workspace,
+    isLoading: workspaceLoading,
+    error,
+  } = useWorkspace();
+
+  // Redirect to setup if no workspace exists
+  useEffect(() => {
+    if (!workspaceLoading && error) {
+      router.push("/workspace/setup");
+    }
+  }, [workspaceLoading, error, router]);
 
   if (authLoading || workspaceLoading) {
     return (
@@ -32,6 +47,16 @@ export default function DashboardPage() {
           <Skeleton className="h-32" />
         </div>
         <Skeleton className="h-64" />
+      </div>
+    );
+  }
+
+  // Show loading while redirecting to setup
+  if (error) {
+    return (
+      <div className="space-y-6">
+        <Skeleton className="h-10 w-64" />
+        <Skeleton className="h-32" />
       </div>
     );
   }

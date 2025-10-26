@@ -93,67 +93,92 @@ frontend/
 │   ├── workspace/        # Workspace hooks and utilities
 │   ├── env.ts            # Environment validation
 │   └── react-query.ts    # TanStack Query configuration
-├── middleware.ts          # Route protection middleware
+├── proxy.ts              # Route protection (Next.js 16)
 ├── scripts/               # Development scripts
 └── .cursor/                # Cursor IDE configuration
 ```
 
-## Current State (Phase 2-3 Complete)
+## Current State (MVP Complete ✅)
 
-### ✅ Completed
-
-**Code Quality & Development Tools:**
-
-- ESLint + Prettier configured with TypeScript strict rules
-- Pre-commit hooks via Python pre-commit tool
-- Lint/format scripts for CI/CD
-
-**State Management:**
-
-- TanStack Query installed with caching defaults
-- QueryProvider and ThemeProvider setup
-- React Query Devtools in development mode
+### ✅ Completed Features
 
 **Authentication System:**
 
-- Auth hooks: `useAuth()`, `useUser()`, `useAuthStatus()`
+- Supabase SSR integration with `@supabase/ssr`
+- Browser and server Supabase clients with cookie-based sessions
+- Login page with email/password authentication
+- Signup page with React Hook Form + Zod validation
+- Disabled Google/Apple social auth buttons (future feature)
+- Proxy middleware for route protection (Next.js 16)
 - Server actions: `signIn()`, `signUp()`, `signOut()`
-- Middleware for route protection
-- Cookie-based session management
+- Auth hooks: `useUser()`, `useAuthStatus()`
 
-**API Integration:**
+**Dashboard & Layout:**
 
-- Generated client with automatic auth token injection
-- Type-safe API calls with backend models
-
-### 🚧 In Progress
-
-**Authentication Pages:**
-
-- Login page with email/password
-- Signup page with form validation
-
-**Responsive Layout:**
-
-- Dashboard layout with responsive sidebar
-- Loading and error states
+- Responsive dashboard layout with shadcn/ui sidebar
+- Automatic mobile/desktop handling (no custom responsive logic)
+- Navigation: Dashboard, Services, Connectors, Settings
+- User menu with avatar and sign out
 
 **Workspace Management:**
 
-- Workspace hooks and CRUD operations
-- Setup flow for new users
-- Settings page
+- Workspace setup wizard for first-time users
+- Dashboard home with workspace overview
+- Settings page with edit and delete functionality
+- Workspace CRUD hooks using TanStack Query
+- Form validation with Zod schemas
+- API integration with automatic auth token injection
+
+**Landing Page:**
+
+- Marketing content for unauthenticated users
+- Auto-redirect authenticated users to dashboard
+- Hero section, feature cards, and footer
+
+**Code Quality & Development Tools:**
+
+- ESLint + Prettier with TypeScript strict mode
+- Pre-commit hooks via Python pre-commit tool
+- Package manager migration from Yarn 4 to npm
+- React Compiler compatibility (React 19 experimental)
+- Generated API client from OpenAPI schema
+
+**State Management:**
+
+- TanStack Query for server state with caching
+- React Query Devtools in development mode
+- Workspace context for global state
+
+**UI Components (shadcn/ui):**
+
+- Button, Card, Input, Label, Dialog
+- Dropdown Menu, Avatar, Badge, Skeleton
+- Select, Separator, Sheet, Sidebar
+- Form, Sonner (toast notifications)
+- Tooltip
+
+### 📋 Next Phase (Phase 3)
+
+**Services Management:**
+
+- CRUD UI for workspace services
+- Service configuration forms
+
+**Scheduling Connectors:**
+
+- Calendly integration UI
+- Connector configuration and testing
+
+**Public Chat Interface:**
+
+- Customer-facing conversation widget
+- Real-time message handling
 
 **Testing:**
 
 - Jest + React Testing Library setup
-- Example tests for components and hooks
-
-### 📋 Planned
-
-- Form patterns with React Hook Form + Zod
-- Documentation updates
-- Additional UI pages and components
+- Component and hook tests
+- Integration tests
 
 ## Shadcn UI Components (MCP Integration)
 

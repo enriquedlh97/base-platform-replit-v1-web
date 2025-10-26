@@ -4,19 +4,28 @@ A scheduling-first platform where freelancers and consulting businesses can spin
 
 ## 🚀 Project Status
 
-**Current Phase**: ✅ Foundation (Phase 1) - Complete! 🎉
+**Current Phase**: ✅ MVP Foundation - Complete! 🎉
 **Architecture**: ✅ Established
 **Backend**: ✅ Ready (FastAPI + SQLModel + Supabase)
-**Frontend**: ✅ Ready (TypeScript + Generated API Client)
+**Frontend**: ✅ MVP Complete (Next.js 16 + TypeScript + shadcn/ui)
 **Database**: ✅ Ready (PostgreSQL via Supabase)
+**Authentication**: ✅ Complete (Supabase Auth + SSR)
 
-### ✅ Phase 1 Completed (Jan 2025)
+### ✅ Phase 1: Backend Foundation (Jan 2025)
 - **5 New Database Models**: Workspace, WorkspaceService, SchedulingConnector, Conversation, ConversationMessage
 - **Extended User Model**: Business profile fields (name, tagline, bio, contact info)
 - **5 API Route Modules**: Complete CRUD operations for all new entities
 - **Database Migration**: Successfully applied with proper constraints and relationships
 - **Test Suite**: 18 new tests added, all 79 tests passing
 - **Code Quality**: Clean linting and comprehensive documentation
+
+### ✅ Phase 2: Frontend MVP (Oct 2025)
+- **Authentication System**: Login/signup pages with Supabase SSR integration
+- **Dashboard**: Responsive layout with shadcn/ui sidebar component
+- **Workspace Management**: Setup wizard and settings page with full CRUD
+- **API Integration**: Type-safe client with automatic auth token injection
+- **Landing Page**: Marketing content with auto-redirect for authenticated users
+- **Development Tools**: ESLint, Prettier, pre-commit hooks, npm migration
 
 ## 🏗️ Architecture
 
@@ -28,8 +37,12 @@ A scheduling-first platform where freelancers and consulting businesses can spin
 - **Development**: Hot reload, comprehensive testing, linting
 
 ### Frontend
-- **Client**: Auto-generated TypeScript API client from OpenAPI schemas
-- **Authentication**: Supabase client integration
+- **Framework**: Next.js 16 with App Router and TypeScript
+- **UI**: shadcn/ui components with Tailwind CSS 4
+- **State Management**: TanStack Query (React Query) for server state
+- **Forms**: React Hook Form with Zod validation
+- **Authentication**: Supabase SSR with cookie-based sessions
+- **API Client**: Auto-generated TypeScript client with automatic auth injection
 - **Type Safety**: End-to-end type safety from backend to frontend
 
 ### Infrastructure
@@ -40,40 +53,44 @@ A scheduling-first platform where freelancers and consulting businesses can spin
 ## 🚦 Quick Start
 
 ### Prerequisites
-- Docker and Docker Compose
-- Node.js and npm (for Supabase)
+- Node.js 20.19.2+ (use nvm: `nvm use`)
+- npm (comes with Node.js)
 - Python 3.12+ and uv (for backend)
+- Docker and Docker Compose (for Supabase)
 
 ### Development Setup
 
-1. **Start Services**
+1. **Start Supabase** (database, auth, storage)
    ```bash
-   # Start Supabase (database, auth, storage)
-   cd supabase && nvm use && yarn start
-
-   # In another terminal, start backend and database
-   docker compose watch
+   cd supabase
+   nvm use && yarn start
    ```
 
-2. **Backend Development**
+2. **Start Backend** (in another terminal)
    ```bash
    cd backend
    uv sync                    # Install dependencies
    source .venv/bin/activate  # Activate virtual environment
+   fastapi run app/main.py --reload
    ```
 
-3. **Generate API Client** (when backend changes)
+3. **Start Frontend** (in another terminal)
+   ```bash
+   cd frontend
+   nvm use                    # Ensure Node 20
+   npm install                # First time only
+   npm run dev
+   ```
+
+4. **Access the Application**
+   - Frontend: http://localhost:3000
+   - Backend API: http://localhost:8000
+   - API Docs: http://localhost:8000/api/v1/docs
+   - Supabase Studio: http://localhost:54323
+
+5. **Generate API Client** (when backend schema changes)
    ```bash
    ./scripts/generate-api-client.sh
-   ```
-
-4. **Run Tests**
-   ```bash
-   # Backend tests
-   cd backend && bash scripts/test.sh
-
-   # Frontend setup (when ready)
-   cd frontend && npm install
    ```
 
 ## 📁 Project Structure
@@ -86,10 +103,18 @@ A scheduling-first platform where freelancers and consulting businesses can spin
 │   │   ├── models.py    # SQLModel database models
 │   │   └── tests/       # Comprehensive test suite
 │   └── scripts/         # Development utilities
-├── frontend/            # TypeScript frontend (in development)
-│   └── sample_client/   # Generated API client example
-├── supabase/           # Database and auth services
-└── scripts/            # Project utilities
+├── frontend/            # Next.js 16 application
+│   ├── app/            # App Router pages and layouts
+│   │   ├── (auth)/     # Authentication pages (login, signup)
+│   │   └── (dashboard)/ # Protected dashboard pages
+│   ├── components/     # UI components (shadcn/ui)
+│   ├── lib/           # Utilities and integrations
+│   │   ├── api/       # Generated API client
+│   │   ├── auth/      # Authentication hooks and actions
+│   │   └── supabase/  # Supabase clients (browser & server)
+│   └── scripts/       # Development utilities
+├── supabase/          # Database and auth services
+└── scripts/           # Project utilities
 ```
 
 ## 🔄 Development Workflow
@@ -116,39 +141,45 @@ A scheduling-first platform where freelancers and consulting businesses can spin
   - Conversation and message tracking
   - Extended user business profiles
 
-### 🚧 In Progress (Phase 2)
-- Setup wizard (onboarding flow)
-
-### 🔄 Upcoming Phases
-- Dashboard (workspace management)
-- Public chat interface
-- Scheduling integration (Calendly)
-- Agent/conversation system
+### 🔄 Upcoming Phases (Phase 3+)
+- **Services Management**: CRUD for workspace services
+- **Scheduling Connectors**: Calendly integration UI
+- **Public Chat Interface**: Customer-facing conversation widget
+- **Agent System**: AI-powered conversation handling
+- **Conversation History**: View and manage past interactions
+- **Testing**: Jest + React Testing Library setup
 
 ## 🛠️ Key Commands
 
 ```bash
-# Start full development stack
-docker compose watch
+# Supabase (database, auth, storage)
+cd supabase && nvm use && yarn start
 
-# Backend only
+# Backend API server
 cd backend && source .venv/bin/activate && fastapi run app/main.py --reload
 
-# Run all tests with coverage
+# Frontend dev server
+cd frontend && nvm use && npm run dev
+
+# Frontend linting and formatting
+cd frontend && npm run lint
+cd frontend && npm run format
+
+# Backend tests with coverage
 cd backend && bash scripts/test.sh
 
-# Generate API client
+# Generate API client (after backend schema changes)
 ./scripts/generate-api-client.sh
-
-# Supabase services
-cd supabase && yarn start
 ```
 
 ## 📚 Resources
 
-- [Backend README](backend/README.md) - Detailed backend documentation
+- [Frontend README](frontend/README.md) - Frontend architecture and development guide
+- [Backend README](backend/README.md) - Backend API documentation
 - [Supabase README](supabase/README.md) - Database and auth setup
-- [API Documentation](http://localhost:8000/api/v1/docs) - Auto-generated when running
+- [API Documentation](http://localhost:8000/api/v1/docs) - Auto-generated OpenAPI docs
+- [Frontend App](http://localhost:3000) - Next.js application
+- [Supabase Studio](http://localhost:54323) - Database management UI
 
 ## 🤝 Contributing
 
@@ -160,12 +191,27 @@ cd supabase && yarn start
 
 ## 📊 Current Statistics
 
-- **Database Models**: 10 total (5 new in Phase 1)
-- **API Endpoints**: 15+ new CRUD routes
-- **Test Coverage**: 79 tests passing (18 new)
-- **Code Quality**: Clean linting and formatting
-- **Database**: Successfully migrated with constraints
+- **Database Models**: 10 total
+- **API Endpoints**: 15+ CRUD routes
+- **Backend Tests**: 79 tests passing
+- **Frontend Pages**: 6 pages (landing, login, signup, dashboard, setup, settings)
+- **UI Components**: 15+ shadcn/ui components integrated
+- **Code Quality**: ESLint + Prettier + pre-commit hooks
+- **Type Safety**: Full end-to-end TypeScript coverage
+
+## 🎯 Test Credentials
+
+For local development:
+```
+Email: seeduser@example.com
+Password: 123456
+```
+
+Run backend seed script if user doesn't exist:
+```bash
+cd backend && python scripts/seed_db.py
+```
 
 ---
 
-**Next**: Phase 2 - Setup wizard implementation for new user onboarding.
+**Next Steps**: Phase 3 - Services management, connectors UI, and public chat interface.

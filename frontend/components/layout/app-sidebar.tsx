@@ -43,7 +43,7 @@ export function AppSidebar() {
     { title: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
     { title: "Services", href: "/dashboard/services", icon: Calendar },
     { title: "Connectors", href: "/dashboard/connectors", icon: Link2 },
-    { title: "Settings", href: "/dashboard/settings", icon: Settings },
+    { title: "Settings", href: "/settings", icon: Settings },
   ];
 
   const handleSignOut = async () => {
