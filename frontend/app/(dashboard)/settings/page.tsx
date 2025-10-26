@@ -29,6 +29,8 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
+import { Badge } from "@/components/ui/badge";
+import { ServicesSection } from "@/components/settings/services-section";
 import {
   workspaceSchema,
   type WorkspaceFormValues,
@@ -38,16 +40,23 @@ import {
   useUpdateWorkspace,
   useDeleteWorkspace,
 } from "@/lib/api/hooks/use-workspaces";
+import { useWorkspaceConnectors } from "@/lib/api/hooks/use-scheduling-connectors";
+import { useUser } from "@/lib/api/hooks/use-users";
 import { toast } from "sonner";
 
 /**
  * Workspace Settings Page
  *
- * Allows users to edit workspace details and delete their workspace.
- * Includes form validation and confirmation dialogs.
+ * Comprehensive settings management for:
+ * - Workspace details (handle, name, type, tone, timezone)
+ * - Services (CRUD with reordering)
+ * - Scheduling connectors (Calendly link management)
+ * - Profile & FAQs (bio, FAQs, profile type)
  */
 export default function SettingsPage() {
   const { data: workspace } = useWorkspace();
+  useUser(); // Fetch user data (will be used for profile section)
+  const { data: connectors } = useWorkspaceConnectors(workspace?.id || "");
   const updateWorkspace = useUpdateWorkspace(workspace?.id || "");
   const deleteWorkspace = useDeleteWorkspace();
   const [isDeleting, setIsDeleting] = useState(false);
@@ -242,6 +251,53 @@ export default function SettingsPage() {
               {updateWorkspace.isPending ? "Saving..." : "Save Changes"}
             </Button>
           </form>
+        </CardContent>
+      </Card>
+
+      {/* Services Section */}
+      <ServicesSection workspaceId={workspace.id} />
+
+      {/* Connectors Section - Placeholder for now */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Scheduling Connectors</CardTitle>
+          <CardDescription>Connect your scheduling platform</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {connectors && connectors.length > 0 ? (
+            <div className="space-y-2">
+              {connectors.map((connector) => {
+                const link =
+                  connector.config &&
+                  typeof connector.config === "object" &&
+                  "link" in connector.config &&
+                  typeof connector.config.link === "string"
+                    ? connector.config.link
+                    : null;
+
+                return (
+                  <div
+                    key={connector.id}
+                    className="flex items-center justify-between rounded-lg border p-3"
+                  >
+                    <div>
+                      <p className="font-medium capitalize">{connector.type}</p>
+                      {link && (
+                        <p className="text-sm text-muted-foreground">{link}</p>
+                      )}
+                    </div>
+                    <Badge
+                      variant={connector.is_active ? "default" : "secondary"}
+                    >
+                      {connector.is_active ? "Active" : "Inactive"}
+                    </Badge>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">No connectors yet</p>
+          )}
         </CardContent>
       </Card>
 
