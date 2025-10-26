@@ -11,7 +11,5 @@ lib/api/generated/
 .vscode
 .cache
 public
-yarn.lock
 package-lock.json
 pnpm-lock.yaml
-.yarn/releases/*.cjs

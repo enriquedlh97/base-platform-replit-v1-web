@@ -1,1 +1,1 @@
-yarn test
+npm test

@@ -1,24 +1,159 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Frontend - Scheduling Platform
+
+This is a [Next.js 16](https://nextjs.org) frontend for an AI-powered scheduling and meeting booking platform. Built with TypeScript, Tailwind CSS, shadcn/ui, and TanStack Query.
+
+## Architecture
+
+- **Framework**: Next.js 16 with App Router
+- **Language**: TypeScript (strict mode)
+- **Styling**: Tailwind CSS 4 with mobile-first responsive design
+- **UI Components**: shadcn/ui with MCP integration
+- **State Management**: TanStack Query for server state, React Context for UI state
+- **Authentication**: Supabase Auth with cookie-based session management
+- **API Client**: Auto-generated from OpenAPI spec with automatic auth token injection
+- **Forms**: React Hook Form with Zod validation
+- **Package Manager**: npm
+
+## Prerequisites
+
+- Node.js 20.19.2+ (use `nvm use` to switch)
+- npm (comes with Node.js)
+- Backend API running on `http://127.0.0.1:8000`
+- Supabase local instance running on `http://127.0.0.1:54321`
 
 ## Getting Started
 
-First, run the development server:
+### Environment Setup
+
+1. Copy environment variables:
+
+   ```bash
+   cp .env.example .env.local
+   ```
+
+2. Update `.env.local` with your configuration:
+   ```env
+   NEXT_PUBLIC_API_URL=http://127.0.0.1:8000/api/v1
+   NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+   ```
+
+### Development
+
+Start the development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to see the application.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Code Quality
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+# Format all files
+npm run format
+
+# Check formatting
+npm run format:check
+
+# Lint and auto-fix
+npm run lint:fix
+
+# Check linting
+npm run lint:check
+
+# Type check
+npm run type-check
+```
+
+### API Client Generation
+
+Regenerate the API client after backend schema changes:
+
+```bash
+npm run generate:api
+```
+
+## Project Structure
+
+```
+frontend/
+├── app/                    # Next.js App Router
+│   ├── layout.tsx         # Root layout with providers
+│   └── page.tsx           # Home page
+├── components/
+│   ├── providers/         # React providers (Query, Theme)
+│   └── ui/               # shadcn/ui components
+├── lib/
+│   ├── api/              # Generated API client
+│   ├── auth/             # Authentication hooks and actions
+│   ├── forms/            # Form schemas and utilities
+│   ├── supabase/         # Supabase client configuration
+│   ├── workspace/        # Workspace hooks and utilities
+│   ├── env.ts            # Environment validation
+│   └── react-query.ts    # TanStack Query configuration
+├── middleware.ts          # Route protection middleware
+├── scripts/               # Development scripts
+└── .cursor/                # Cursor IDE configuration
+```
+
+## Current State (Phase 2-3 Complete)
+
+### ✅ Completed
+
+**Code Quality & Development Tools:**
+
+- ESLint + Prettier configured with TypeScript strict rules
+- Pre-commit hooks via Python pre-commit tool
+- Lint/format scripts for CI/CD
+
+**State Management:**
+
+- TanStack Query installed with caching defaults
+- QueryProvider and ThemeProvider setup
+- React Query Devtools in development mode
+
+**Authentication System:**
+
+- Auth hooks: `useAuth()`, `useUser()`, `useAuthStatus()`
+- Server actions: `signIn()`, `signUp()`, `signOut()`
+- Middleware for route protection
+- Cookie-based session management
+
+**API Integration:**
+
+- Generated client with automatic auth token injection
+- Type-safe API calls with backend models
+
+### 🚧 In Progress
+
+**Authentication Pages:**
+
+- Login page with email/password
+- Signup page with form validation
+
+**Responsive Layout:**
+
+- Dashboard layout with responsive sidebar
+- Loading and error states
+
+**Workspace Management:**
+
+- Workspace hooks and CRUD operations
+- Setup flow for new users
+- Settings page
+
+**Testing:**
+
+- Jest + React Testing Library setup
+- Example tests for components and hooks
+
+### 📋 Planned
+
+- Form patterns with React Hook Form + Zod
+- Documentation updates
+- Additional UI pages and components
 
 ## Shadcn UI Components (MCP Integration)
 

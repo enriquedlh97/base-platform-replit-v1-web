@@ -7,6 +7,14 @@ const eslintConfig = defineConfig([
   ...nextVitals,
   ...nextTs,
   prettier,
+  {
+    rules: {
+      // Disable React Compiler warning for React Hook Form compatibility
+      // React Hook Form's watch() is incompatible with React Compiler (React 19)
+      // This is a known library issue, not a code quality problem
+      "react-hooks/incompatible-library": "off",
+    },
+  },
   // Override default ignores of eslint-config-next.
   globalIgnores([
     // Default ignores of eslint-config-next:
