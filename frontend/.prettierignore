@@ -1,0 +1,17 @@
+node_modules
+.next
+dist
+build
+coverage
+*.generated.ts
+*.gen.ts
+generated/
+api/generated/
+lib/api/generated/
+.vscode
+.cache
+public
+yarn.lock
+package-lock.json
+pnpm-lock.yaml
+.yarn/releases/*.cjs
