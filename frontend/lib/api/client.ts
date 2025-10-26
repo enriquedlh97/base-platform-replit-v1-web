@@ -75,4 +75,5 @@ export {
   LoginService,
   ConversationsService,
   SchedulingConnectorsService,
+  WorkspaceServicesService,
 } from "@/lib/api/generated";

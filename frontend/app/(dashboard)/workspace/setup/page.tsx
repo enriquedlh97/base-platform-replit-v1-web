@@ -1,208 +1,145 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Button } from "@/components/ui/button";
+import { useState } from "react";
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { useCreateWorkspace } from "@/lib/api/hooks/use-workspaces";
-import {
-  workspaceSchema,
-  type WorkspaceFormValues,
-} from "@/lib/validation/workspace";
+  SetupWizardProvider,
+  useSetupWizard,
+} from "@/lib/context/setup-wizard-context";
+import { ProfileStep } from "./steps/profile-step";
+import { ServicesStep } from "./steps/services-step";
+import { SchedulingStep } from "./steps/scheduling-step";
+import { ChannelsStep } from "./steps/channels-step";
+import { Progress } from "@/components/ui/progress";
+import { useCompleteSetup } from "@/lib/api/hooks/use-setup-wizard";
 import { toast } from "sonner";
+import { Skeleton } from "@/components/ui/skeleton";
+import type {
+  ProfileStepValues,
+  ServicesStepValues,
+  SchedulingStepValues,
+} from "@/lib/validation/setup";
 
 /**
- * Workspace Setup Page
+ * Main Setup Wizard Container
  *
- * First-time workspace creation form for new users.
- * Includes all required fields: handle, name, type, tone, timezone.
+ * Orchestrates the 4-step setup wizard with progress indicator and navigation.
  */
-export default function WorkspaceSetupPage() {
+function SetupWizardContent() {
+  const { state } = useSetupWizard();
   const router = useRouter();
-  const createWorkspace = useCreateWorkspace();
   const [isLoading, setIsLoading] = useState(false);
+  const completeSetup = useCompleteSetup();
 
-  const {
-    register,
-    handleSubmit,
-    setValue,
-    watch,
-    formState: { errors },
-  } = useForm<WorkspaceFormValues>({
-    resolver: zodResolver(workspaceSchema),
-  });
+  const steps = [
+    { title: "Profile", description: "Basic information" },
+    { title: "Services", description: "Offerings & FAQs" },
+    { title: "Scheduling", description: "Calendly setup" },
+    { title: "Channels", description: "Publish & go live" },
+  ];
 
-  const watchedType = watch("type");
-  const watchedTone = watch("tone");
-  const watchedTimezone = watch("timezone");
+  const currentStep = state.currentStep;
+  const progress = ((currentStep - 1) / (steps.length - 1)) * 100;
 
-  const onSubmit = async (data: WorkspaceFormValues) => {
+  const handlePublish = async () => {
     setIsLoading(true);
-
     try {
-      await createWorkspace.mutateAsync(data);
-      toast.success("Workspace created successfully!");
+      await completeSetup.mutateAsync({
+        profile: state.profile as ProfileStepValues,
+        services: state.services as ServicesStepValues,
+        scheduling: state.scheduling as SchedulingStepValues,
+      });
+
+      toast.success("Your agent is live!");
       router.push("/dashboard");
     } catch (error) {
       toast.error(
-        error instanceof Error ? error.message : "Failed to create workspace"
+        error instanceof Error ? error.message : "Failed to publish agent"
       );
-    } finally {
       setIsLoading(false);
     }
   };
 
+  const renderStep = () => {
+    switch (currentStep) {
+      case 1:
+        return <ProfileStep />;
+      case 2:
+        return <ServicesStep />;
+      case 3:
+        return <SchedulingStep />;
+      case 4:
+        return (
+          <div>
+            <ChannelsStep />
+            <div className="mt-4 flex justify-end">
+              <button
+                onClick={handlePublish}
+                disabled={isLoading}
+                className="inline-flex items-center justify-center rounded-md bg-primary px-6 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:pointer-events-none"
+              >
+                {isLoading ? "Publishing..." : "Publish & Go Live"}
+              </button>
+            </div>
+          </div>
+        );
+      default:
+        return <ProfileStep />;
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <div className="mx-auto max-w-2xl space-y-6">
+        <Skeleton className="h-64" />
+      </div>
+    );
+  }
+
   return (
-    <div className="mx-auto max-w-2xl">
-      <Card>
-        <CardHeader>
-          <CardTitle>Create Your Workspace</CardTitle>
-          <CardDescription>
-            Set up your workspace to get started
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-            {/* Handle */}
-            <div className="space-y-2">
-              <Label htmlFor="handle">Workspace Handle</Label>
-              <Input
-                id="handle"
-                placeholder="my-workspace"
-                {...register("handle")}
-                disabled={isLoading}
-                aria-invalid={!!errors.handle}
-              />
-              {errors.handle && (
-                <p className="text-sm text-destructive">
-                  {errors.handle.message}
-                </p>
-              )}
-              <p className="text-sm text-muted-foreground">
-                URL-friendly identifier (lowercase, hyphens allowed)
-              </p>
-            </div>
+    <div className="mx-auto max-w-3xl space-y-6">
+      {/* Progress Indicator */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between text-sm">
+          <span className="font-medium">
+            Step {currentStep} of {steps.length}
+          </span>
+          <span className="text-muted-foreground">
+            {steps[currentStep - 1].title}
+          </span>
+        </div>
+        <Progress value={progress} className="h-2" />
+      </div>
 
-            {/* Name */}
-            <div className="space-y-2">
-              <Label htmlFor="name">Workspace Name</Label>
-              <Input
-                id="name"
-                placeholder="My Workspace"
-                {...register("name")}
-                disabled={isLoading}
-                aria-invalid={!!errors.name}
-              />
-              {errors.name && (
-                <p className="text-sm text-destructive">
-                  {errors.name.message}
-                </p>
-              )}
+      {/* Step Navigation Breadcrumbs */}
+      <div className="flex gap-2">
+        {steps.map((step, index) => (
+          <div
+            key={index}
+            className={`flex-1 rounded-lg border p-3 text-center text-sm ${
+              index + 1 <= currentStep
+                ? "border-primary bg-primary/10"
+                : "border-muted"
+            }`}
+          >
+            <div className="font-medium">{step.title}</div>
+            <div className="text-xs text-muted-foreground">
+              {step.description}
             </div>
+          </div>
+        ))}
+      </div>
 
-            {/* Type */}
-            <div className="space-y-2">
-              <Label htmlFor="type">Workspace Type</Label>
-              <Select
-                value={watchedType}
-                onValueChange={(value) => setValue("type", value)}
-                disabled={isLoading}
-              >
-                <SelectTrigger aria-invalid={!!errors.type}>
-                  <SelectValue placeholder="Select a type" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="consulting">Consulting</SelectItem>
-                  <SelectItem value="agency">Agency</SelectItem>
-                  <SelectItem value="freelance">Freelance</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
-              {errors.type && (
-                <p className="text-sm text-destructive">
-                  {errors.type.message}
-                </p>
-              )}
-            </div>
-
-            {/* Tone */}
-            <div className="space-y-2">
-              <Label htmlFor="tone">Tone</Label>
-              <Select
-                value={watchedTone}
-                onValueChange={(value) => setValue("tone", value)}
-                disabled={isLoading}
-              >
-                <SelectTrigger aria-invalid={!!errors.tone}>
-                  <SelectValue placeholder="Select a tone" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="professional">Professional</SelectItem>
-                  <SelectItem value="friendly">Friendly</SelectItem>
-                  <SelectItem value="casual">Casual</SelectItem>
-                  <SelectItem value="formal">Formal</SelectItem>
-                </SelectContent>
-              </Select>
-              {errors.tone && (
-                <p className="text-sm text-destructive">
-                  {errors.tone.message}
-                </p>
-              )}
-            </div>
-
-            {/* Timezone */}
-            <div className="space-y-2">
-              <Label htmlFor="timezone">Timezone</Label>
-              <Select
-                value={watchedTimezone}
-                onValueChange={(value) => setValue("timezone", value)}
-                disabled={isLoading}
-              >
-                <SelectTrigger aria-invalid={!!errors.timezone}>
-                  <SelectValue placeholder="Select a timezone" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="UTC">UTC</SelectItem>
-                  <SelectItem value="America/New_York">Eastern Time</SelectItem>
-                  <SelectItem value="America/Chicago">Central Time</SelectItem>
-                  <SelectItem value="America/Denver">Mountain Time</SelectItem>
-                  <SelectItem value="America/Los_Angeles">
-                    Pacific Time
-                  </SelectItem>
-                  <SelectItem value="Europe/London">London</SelectItem>
-                  <SelectItem value="Europe/Paris">Paris</SelectItem>
-                </SelectContent>
-              </Select>
-              {errors.timezone && (
-                <p className="text-sm text-destructive">
-                  {errors.timezone.message}
-                </p>
-              )}
-            </div>
-
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "Creating workspace..." : "Create Workspace"}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
+      {/* Step Content */}
+      {renderStep()}
     </div>
+  );
+}
+
+export default function SetupWizardPage() {
+  return (
+    <SetupWizardProvider>
+      <SetupWizardContent />
+    </SetupWizardProvider>
   );
 }

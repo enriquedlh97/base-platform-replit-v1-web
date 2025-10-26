@@ -77,10 +77,23 @@ export default function DashboardPage() {
       {workspace && (
         <Card>
           <CardHeader>
-            <CardTitle>Workspace</CardTitle>
-            <CardDescription>
-              {workspace.name} • {workspace.handle}
-            </CardDescription>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle>Workspace</CardTitle>
+                <CardDescription>
+                  {workspace.name} • {workspace.handle}
+                </CardDescription>
+              </div>
+              <Button asChild variant="outline">
+                <a
+                  href={`/a/${workspace.handle}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  View Agent
+                </a>
+              </Button>
+            </div>
           </CardHeader>
           <CardContent>
             <div className="grid gap-4 md:grid-cols-2">

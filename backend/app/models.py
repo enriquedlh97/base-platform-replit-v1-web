@@ -31,6 +31,9 @@ class UserBase(SQLModel):
     website: str | None = Field(default=None, max_length=500)
     social_links: dict[str, str] | None = Field(default=None, sa_column=Column(JSON))
     setup_completed: bool = Field(default=False)
+    # Setup wizard fields
+    profile_type: str | None = Field(default=None, max_length=50)
+    faqs: str | None = None
 
 
 # Properties to receive via API on creation
@@ -58,6 +61,9 @@ class UserUpdateMe(SQLModel):
     website: str | None = Field(default=None, max_length=500)
     social_links: dict[str, str] | None = Field(default=None, sa_column=Column(JSON))
     setup_completed: bool | None = None
+    # Setup wizard fields
+    profile_type: str | None = Field(default=None, max_length=50)
+    faqs: str | None = None
 
 
 # Database model, database table inferred from class name

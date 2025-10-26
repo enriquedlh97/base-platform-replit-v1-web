@@ -165,7 +165,7 @@ export default function SettingsPage() {
 
             {/* Type */}
             <div className="space-y-2">
-              <Label htmlFor="type">Workspace Type</Label>
+              <Label htmlFor="type">Profile Type</Label>
               <Select
                 value={watchedType}
                 onValueChange={(value) => setValue("type", value)}
@@ -174,10 +174,8 @@ export default function SettingsPage() {
                   <SelectValue placeholder="Select a type" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="consulting">Consulting</SelectItem>
-                  <SelectItem value="agency">Agency</SelectItem>
-                  <SelectItem value="freelance">Freelance</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
+                  <SelectItem value="individual">Individual</SelectItem>
+                  <SelectItem value="business">Business</SelectItem>
                 </SelectContent>
               </Select>
               {errors.type && (
@@ -199,9 +197,9 @@ export default function SettingsPage() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="professional">Professional</SelectItem>
-                  <SelectItem value="friendly">Friendly</SelectItem>
-                  <SelectItem value="casual">Casual</SelectItem>
-                  <SelectItem value="formal">Formal</SelectItem>
+                  <SelectItem value="warm">Warm</SelectItem>
+                  <SelectItem value="pragmatic">Pragmatic</SelectItem>
+                  <SelectItem value="executive">Executive-friendly</SelectItem>
                 </SelectContent>
               </Select>
               {errors.tone && (

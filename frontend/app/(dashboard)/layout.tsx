@@ -1,5 +1,9 @@
 import { AppSidebar } from "@/components/layout/app-sidebar";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+} from "@/components/ui/sidebar";
 
 /**
  * Dashboard Layout
@@ -18,7 +22,8 @@ export default function DashboardLayout({
       <AppSidebar />
       <SidebarInset className="flex h-full flex-col">
         <header className="flex h-12 items-center gap-2 border-b px-4">
-          {/* Header content can go here if needed */}
+          <SidebarTrigger />
+          {/* Mobile menu toggle appears here automatically */}
         </header>
         <div className="flex flex-1 flex-col overflow-auto">
           <main className="flex-1 p-4 md:p-6 lg:p-8">{children}</main>
