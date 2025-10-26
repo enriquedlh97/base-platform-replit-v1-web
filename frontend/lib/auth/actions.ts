@@ -23,9 +23,8 @@ import { cookies } from "next/headers";
  */
 export async function signIn(email: string, password: string) {
   const supabase = await createClient();
-  const cookieStore = await cookies();
 
-  const { data, error } = await supabase.auth.signInWithPassword({
+  const { error } = await supabase.auth.signInWithPassword({
     email,
     password,
   });
@@ -34,23 +33,9 @@ export async function signIn(email: string, password: string) {
     return { error: error.message };
   }
 
-  if (data.session) {
-    // Set session cookies for middleware
-    cookieStore.set("sb-access-token", data.session.access_token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/",
-    });
-    cookieStore.set("sb-refresh-token", data.session.refresh_token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/",
-    });
-  }
+  // Revalidate to clear any cached data
+  revalidatePath("/", "layout");
 
-  revalidatePath("/");
   return { success: true };
 }
 

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
@@ -17,7 +17,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { signIn } from "@/lib/auth/actions";
+import { createClient } from "@/lib/supabase/client";
 import { loginSchema, type LoginFormValues } from "@/lib/validation/auth";
 import { toast } from "sonner";
 
@@ -28,7 +28,6 @@ import { toast } from "sonner";
  * Includes social auth buttons (Google, Apple) in disabled state for future implementation.
  */
 export default function LoginPage() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(false);
 
@@ -44,19 +43,25 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
-      const result = await signIn(data.email, data.password);
+      const supabase = createClient();
+      const { error } = await supabase.auth.signInWithPassword({
+        email: data.email,
+        password: data.password,
+      });
 
-      if (result.error) {
-        toast.error(result.error);
+      if (error) {
+        toast.error(error.message);
+        setIsLoading(false);
       } else {
         toast.success("Successfully signed in");
         // Redirect to original destination or dashboard
         const redirectTo = searchParams.get("redirect") || "/dashboard";
-        router.push(redirectTo);
+        // Force a hard navigation to ensure session is picked up
+        // eslint-disable-next-line react-hooks/immutability
+        window.location.href = redirectTo;
       }
     } catch {
       toast.error("An unexpected error occurred");
-    } finally {
       setIsLoading(false);
     }
   };

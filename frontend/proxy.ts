@@ -14,7 +14,7 @@ import { createClient } from "@/lib/supabase/server";
  * Public routes: /, /login, /signup, /c/*
  */
 
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Public routes that don't require authentication

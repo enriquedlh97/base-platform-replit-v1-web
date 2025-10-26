@@ -1,6 +1,6 @@
 "use client";
 
-import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { createBrowserClient } from "@supabase/ssr";
 import { env } from "@/lib/env";
 
 /**
@@ -9,6 +9,8 @@ import { env } from "@/lib/env";
  * This creates a Supabase client that works in Client Components and hooks.
  * For Server Components, use createClient() from '@/lib/supabase/server'
  *
+ * Uses @supabase/ssr for proper cookie handling that's compatible with the server client.
+ *
  * Usage:
  *   import { createClient } from "@/lib/supabase/client"
  *   const supabase = createClient()
@@ -16,7 +18,7 @@ import { env } from "@/lib/env";
  */
 
 export const createClient = () => {
-  return createSupabaseClient(
+  return createBrowserClient(
     env.NEXT_PUBLIC_SUPABASE_URL,
     env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   );
