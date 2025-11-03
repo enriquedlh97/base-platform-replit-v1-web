@@ -1,161 +1,37 @@
-"use client";
+import { AppSidebar } from "@/components/app-sidebar";
+import { ChartAreaInteractive } from "@/components/chart-area-interactive";
+import { DataTable } from "@/components/data-table";
+import { SectionCards } from "@/components/section-cards";
+import { SiteHeader } from "@/components/site-header";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
-import { useAuthStatus } from "@/lib/auth/hooks";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useWorkspace } from "@/lib/api/hooks/use-workspaces";
+import data from "./data.json";
 
-/**
- * Dashboard Home Page
- *
- * Shows workspace overview and quick actions.
- * Displays basic stats and navigation to key areas.
- * Redirects to setup if no workspace exists.
- */
-export default function DashboardPage() {
-  const router = useRouter();
-  const { user, isLoading: authLoading } = useAuthStatus();
-  const {
-    data: workspace,
-    isLoading: workspaceLoading,
-    error,
-  } = useWorkspace();
-
-  // Redirect to setup if no workspace exists
-  useEffect(() => {
-    if (!workspaceLoading && error) {
-      router.push("/workspace/setup");
-    }
-  }, [workspaceLoading, error, router]);
-
-  if (authLoading || workspaceLoading) {
-    return (
-      <div className="space-y-6">
-        <Skeleton className="h-10 w-64" />
-        <div className="grid gap-4 md:grid-cols-2">
-          <Skeleton className="h-32" />
-          <Skeleton className="h-32" />
-        </div>
-        <Skeleton className="h-64" />
-      </div>
-    );
-  }
-
-  // Show loading while redirecting to setup
-  if (error) {
-    return (
-      <div className="space-y-6">
-        <Skeleton className="h-10 w-64" />
-        <Skeleton className="h-32" />
-      </div>
-    );
-  }
-
+export default function Page() {
   return (
-    <div className="space-y-6">
-      {/* Welcome Section */}
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">
-          Welcome back, {user?.name || "User"}!
-        </h1>
-        <p className="text-muted-foreground">
-          Here&apos;s an overview of your workspace.
-        </p>
-      </div>
-
-      {/* Workspace Info Card */}
-      {workspace && (
-        <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <div>
-                <CardTitle>Workspace</CardTitle>
-                <CardDescription>
-                  {workspace.name} • {workspace.handle}
-                </CardDescription>
+    <SidebarProvider
+      style={
+        {
+          "--sidebar-width": "calc(var(--spacing) * 72)",
+          "--header-height": "calc(var(--spacing) * 12)",
+        } as React.CSSProperties
+      }
+    >
+      <AppSidebar variant="inset" />
+      <SidebarInset>
+        <SiteHeader />
+        <div className="flex flex-1 flex-col">
+          <div className="@container/main flex flex-1 flex-col gap-2">
+            <div className="flex flex-col gap-4 py-4 md:gap-6 md:py-6">
+              <SectionCards />
+              <div className="px-4 lg:px-6">
+                <ChartAreaInteractive />
               </div>
-              <Button asChild variant="outline">
-                <a
-                  href={`/a/${workspace.handle}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  View Agent
-                </a>
-              </Button>
+              <DataTable data={data} />
             </div>
-          </CardHeader>
-          <CardContent>
-            <div className="grid gap-4 md:grid-cols-2">
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-muted-foreground">
-                  Type
-                </p>
-                <p className="text-base capitalize">{workspace.type}</p>
-              </div>
-              <div className="space-y-1">
-                <p className="text-sm font-medium text-muted-foreground">
-                  Tone
-                </p>
-                <p className="text-base capitalize">{workspace.tone}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Quick Actions</CardTitle>
-          <CardDescription>Get started with common tasks</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-2">
-            <Button
-              variant="outline"
-              className="h-auto flex-col items-start justify-start p-6"
-            >
-              <Plus className="mb-2 h-6 w-6" />
-              <span className="font-semibold">Add Service</span>
-              <span className="text-sm text-muted-foreground">
-                Create a new service offering
-              </span>
-            </Button>
-            <Button
-              variant="outline"
-              className="h-auto flex-col items-start justify-start p-6"
-            >
-              <Plus className="mb-2 h-6 w-6" />
-              <span className="font-semibold">Add Connector</span>
-              <span className="text-sm text-muted-foreground">
-                Connect your scheduling platform
-              </span>
-            </Button>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Recent Activity */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Recent Conversations</CardTitle>
-          <CardDescription>Your latest interactions</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">No conversations yet.</p>
-        </CardContent>
-      </Card>
-    </div>
+        </div>
+      </SidebarInset>
+    </SidebarProvider>
   );
 }
