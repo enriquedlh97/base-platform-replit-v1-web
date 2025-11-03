@@ -13,11 +13,13 @@ import {
   IconHelp,
   IconInnerShadowTop,
   IconListDetails,
+  IconMessageCircle,
   IconReport,
   IconSearch,
   IconSettings,
   IconUsers,
 } from "@tabler/icons-react";
+import type { Icon } from "@tabler/icons-react";
 
 import { NavDocuments } from "@/components/nav-documents";
 import { NavMain } from "@/components/nav-main";
@@ -34,6 +36,7 @@ import {
 } from "@/components/ui/sidebar";
 import { useAuthStatus } from "@/lib/auth/hooks";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useWorkspace } from "@/lib/api/hooks/use-workspaces";
 
 const navigationData = {
   navMain: [
@@ -158,6 +161,28 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       }
     : null;
 
+  const { data: workspace } = useWorkspace();
+
+  type MainItem = {
+    title: string;
+    url: string;
+    icon?: Icon;
+    targetBlank?: boolean;
+  };
+
+  const mainItems: MainItem[] = React.useMemo(() => {
+    const base: MainItem[] = navigationData.navMain.slice();
+    if (workspace && workspace.handle) {
+      base.push({
+        title: "Public Chat",
+        url: `/u/${encodeURIComponent(workspace.handle)}/chat`,
+        icon: IconMessageCircle,
+        targetBlank: true,
+      });
+    }
+    return base;
+  }, [workspace]);
+
   return (
     <Sidebar collapsible="offcanvas" {...props}>
       <SidebarHeader>
@@ -178,7 +203,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <NavMain items={navigationData.navMain} />
+        <NavMain items={mainItems} />
         <NavDocuments items={navigationData.documents} />
         <NavSecondary items={navigationData.navSecondary} className="mt-auto" />
       </SidebarContent>

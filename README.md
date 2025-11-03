@@ -23,6 +23,7 @@ A scheduling-first platform where freelancers and consulting businesses can spin
 - **Authentication System**: Login/signup pages with Supabase SSR integration
 - **Knowledge Base**: Default landing page with unlimited text editor for business information (now includes a minimal Calendly link input saved as a SchedulingConnector)
 - **Dashboard**: Responsive layout with shadcn/ui sidebar component
+- **Public Chat (Phase 1 shell)**: Public page at `/u/{workspace_handle}/chat` with polling-based chat UI. Sidebar includes a "Public Chat" item for quick access (opens in a new tab).
 - **Workspace Management**: Auto-created on first access, settings page with full CRUD
 - **API Integration**: Type-safe client with automatic auth token injection
 - **Landing Page**: Marketing content with auto-redirect to knowledge base for authenticated users
@@ -157,7 +158,7 @@ A scheduling-first platform where freelancers and consulting businesses can spin
 ### 🔄 Upcoming Phases (Phase 3+)
 - **Services Management**: CRUD for workspace services
 - **Scheduling Connectors**: Full connectors management UI and provider-specific flows (Calendly MVP link input already available in Knowledge Base)
-- **Public Chat Interface**: Customer-facing conversation widget
+- **Public Chat Streaming + Agent**: Upgrade to streaming (SSE) and LLM-powered agent responses
 - **Agent System**: AI-powered conversation handling
 - **Conversation History**: View and manage past interactions
 - **Testing**: Jest + React Testing Library setup
@@ -189,6 +190,7 @@ cd backend && bash scripts/test.sh
 
 - [Frontend README](frontend/README.md) - Frontend architecture and development guide
 - [Backend README](backend/README.md) - Backend API documentation
+- Public chat URL shape: `/u/{workspace_handle}/chat`
 - [Supabase README](supabase/README.md) - Database and auth setup
 - [API Documentation](http://localhost:8000/api/v1/docs) - Auto-generated OpenAPI docs
 - [Frontend App](http://localhost:3000) - Next.js application

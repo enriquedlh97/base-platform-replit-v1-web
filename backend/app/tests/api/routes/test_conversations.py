@@ -17,17 +17,12 @@ def test_create_conversation(
     user = db.exec(select(User).where(User.email == settings.EMAIL_TEST_USER)).first()
     assert user is not None
 
-    # Create workspace
-    workspace = Workspace(
-        owner_id=user.id,
-        handle="test-workspace",
-        name="Test Workspace",
-        type="individual",
-        tone="professional",
-        timezone="UTC",
+    # Ensure workspace exists via endpoint (auto-creates if missing)
+    me = client.get(
+        f"{settings.API_V1_STR}/workspaces/me", headers=normal_user_token_headers
     )
-    db.add(workspace)
-    db.commit()
+    assert me.status_code == 200
+    workspace_id = me.json()["id"]
 
     # Create conversation
     data = {
@@ -37,7 +32,7 @@ def test_create_conversation(
         "status": "active",
     }
     response = client.post(
-        f"{settings.API_V1_STR}/conversations/workspaces/{workspace.id}",
+        f"{settings.API_V1_STR}/conversations/workspaces/{workspace_id}",
         headers=normal_user_token_headers,
         json=data,
     )
@@ -47,7 +42,7 @@ def test_create_conversation(
     assert content["visitor_email"] == data["visitor_email"]
     assert content["channel"] == data["channel"]
     assert content["status"] == data["status"]
-    assert content["workspace_id"] == str(workspace.id)
+    assert content["workspace_id"] == str(workspace_id)
     assert "id" in content
 
 
@@ -59,28 +54,22 @@ def test_list_conversations(
     user = db.exec(select(User).where(User.email == settings.EMAIL_TEST_USER)).first()
     assert user is not None
 
-    # Create workspace
-    workspace = Workspace(
-        owner_id=user.id,
-        handle="test-workspace",
-        name="Test Workspace",
-        type="individual",
-        tone="professional",
-        timezone="UTC",
+    me = client.get(
+        f"{settings.API_V1_STR}/workspaces/me", headers=normal_user_token_headers
     )
-    db.add(workspace)
-    db.commit()
+    assert me.status_code == 200
+    workspace_id = me.json()["id"]
 
     # Create conversations
     conv1 = Conversation(
-        workspace_id=workspace.id,
+        workspace_id=workspace_id,
         visitor_name="Alice",
         visitor_email="alice@example.com",
         channel="web",
         status="active",
     )
     conv2 = Conversation(
-        workspace_id=workspace.id,
+        workspace_id=workspace_id,
         visitor_name="Bob",
         visitor_email="bob@example.com",
         channel="instagram",
@@ -91,7 +80,7 @@ def test_list_conversations(
     db.commit()
 
     response = client.get(
-        f"{settings.API_V1_STR}/conversations/workspaces/{workspace.id}",
+        f"{settings.API_V1_STR}/conversations/workspaces/{workspace_id}",
         headers=normal_user_token_headers,
     )
     assert response.status_code == 200
@@ -107,20 +96,14 @@ def test_get_conversation_by_id(
     user = db.exec(select(User).where(User.email == settings.EMAIL_TEST_USER)).first()
     assert user is not None
 
-    # Create workspace and conversation
-    workspace = Workspace(
-        owner_id=user.id,
-        handle="test-workspace",
-        name="Test Workspace",
-        type="individual",
-        tone="professional",
-        timezone="UTC",
+    me = client.get(
+        f"{settings.API_V1_STR}/workspaces/me", headers=normal_user_token_headers
     )
-    db.add(workspace)
-    db.commit()
+    assert me.status_code == 200
+    workspace_id = me.json()["id"]
 
     conversation = Conversation(
-        workspace_id=workspace.id,
+        workspace_id=workspace_id,
         visitor_name="Test User",
         visitor_email="test@example.com",
         channel="web",
@@ -147,20 +130,14 @@ def test_update_conversation_status(
     user = db.exec(select(User).where(User.email == settings.EMAIL_TEST_USER)).first()
     assert user is not None
 
-    # Create workspace and conversation
-    workspace = Workspace(
-        owner_id=user.id,
-        handle="test-workspace",
-        name="Test Workspace",
-        type="individual",
-        tone="professional",
-        timezone="UTC",
+    me = client.get(
+        f"{settings.API_V1_STR}/workspaces/me", headers=normal_user_token_headers
     )
-    db.add(workspace)
-    db.commit()
+    assert me.status_code == 200
+    workspace_id = me.json()["id"]
 
     conversation = Conversation(
-        workspace_id=workspace.id,
+        workspace_id=workspace_id,
         visitor_name="Test User",
         visitor_email="test@example.com",
         channel="web",
@@ -189,20 +166,14 @@ def test_add_message_to_conversation(
     user = db.exec(select(User).where(User.email == settings.EMAIL_TEST_USER)).first()
     assert user is not None
 
-    # Create workspace and conversation
-    workspace = Workspace(
-        owner_id=user.id,
-        handle="test-workspace",
-        name="Test Workspace",
-        type="individual",
-        tone="professional",
-        timezone="UTC",
+    me = client.get(
+        f"{settings.API_V1_STR}/workspaces/me", headers=normal_user_token_headers
     )
-    db.add(workspace)
-    db.commit()
+    assert me.status_code == 200
+    workspace_id = me.json()["id"]
 
     conversation = Conversation(
-        workspace_id=workspace.id,
+        workspace_id=workspace_id,
         visitor_name="Test User",
         visitor_email="test@example.com",
         channel="web",
@@ -288,20 +259,14 @@ def test_delete_conversation(
     user = db.exec(select(User).where(User.email == settings.EMAIL_TEST_USER)).first()
     assert user is not None
 
-    # Create workspace and conversation
-    workspace = Workspace(
-        owner_id=user.id,
-        handle="test-workspace",
-        name="Test Workspace",
-        type="individual",
-        tone="professional",
-        timezone="UTC",
+    me = client.get(
+        f"{settings.API_V1_STR}/workspaces/me", headers=normal_user_token_headers
     )
-    db.add(workspace)
-    db.commit()
+    assert me.status_code == 200
+    workspace_id = me.json()["id"]
 
     conversation = Conversation(
-        workspace_id=workspace.id,
+        workspace_id=workspace_id,
         visitor_name="Test User",
         visitor_email="test@example.com",
         channel="web",

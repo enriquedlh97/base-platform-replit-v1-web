@@ -144,17 +144,17 @@ def test_get_my_workspace(
     assert content["owner_id"] == str(user.id)
 
 
-def test_get_my_workspace_not_found(
+def test_get_my_workspace_auto_created(
     client: TestClient, normal_user_token_headers: dict[str, str]
 ) -> None:
-    """Test getting workspace when user has none."""
+    """When user has no workspace, endpoint auto-creates one and returns 200."""
     response = client.get(
         f"{settings.API_V1_STR}/workspaces/me",
         headers=normal_user_token_headers,
     )
-    assert response.status_code == 404
+    assert response.status_code == 200
     content = response.json()
-    assert "no workspace" in content["detail"].lower()
+    assert "id" in content
 
 
 def test_get_workspace_by_id(

@@ -13,6 +13,7 @@ from app.api.routes import (
     private,
     projects,
     providers,
+    public_conversations,
     scheduling_connectors,
     services,
     users,
@@ -41,6 +42,7 @@ api_router.include_router(workspace_services.router)
 api_router.include_router(scheduling_connectors.router)
 api_router.include_router(conversations.router)
 api_router.include_router(messages.router)
+api_router.include_router(public_conversations.router)
 
 
 if settings.ENVIRONMENT == "local":

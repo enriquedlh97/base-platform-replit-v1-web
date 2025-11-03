@@ -17,17 +17,12 @@ def test_create_connector(
     user = db.exec(select(User).where(User.email == settings.EMAIL_TEST_USER)).first()
     assert user is not None
 
-    # Create workspace
-    workspace = Workspace(
-        owner_id=user.id,
-        handle="test-workspace",
-        name="Test Workspace",
-        type="individual",
-        tone="professional",
-        timezone="UTC",
+    # Ensure workspace exists via endpoint (auto-creates if missing)
+    me = client.get(
+        f"{settings.API_V1_STR}/workspaces/me", headers=normal_user_token_headers
     )
-    db.add(workspace)
-    db.commit()
+    assert me.status_code == 200
+    workspace_id = me.json()["id"]
 
     # Create connector
     data = {
@@ -40,7 +35,7 @@ def test_create_connector(
         "is_active": False,
     }
     response = client.post(
-        f"{settings.API_V1_STR}/connectors/workspaces/{workspace.id}",
+        f"{settings.API_V1_STR}/connectors/workspaces/{workspace_id}",
         headers=normal_user_token_headers,
         json=data,
     )
@@ -49,7 +44,7 @@ def test_create_connector(
     assert content["type"] == data["type"]
     assert content["config"] == data["config"]
     assert content["is_active"] is False
-    assert content["workspace_id"] == str(workspace.id)
+    assert content["workspace_id"] == str(workspace_id)
     assert "id" in content
 
 
@@ -61,27 +56,21 @@ def test_list_connectors(
     user = db.exec(select(User).where(User.email == settings.EMAIL_TEST_USER)).first()
     assert user is not None
 
-    # Create workspace
-    workspace = Workspace(
-        owner_id=user.id,
-        handle="test-workspace",
-        name="Test Workspace",
-        type="individual",
-        tone="professional",
-        timezone="UTC",
+    me = client.get(
+        f"{settings.API_V1_STR}/workspaces/me", headers=normal_user_token_headers
     )
-    db.add(workspace)
-    db.commit()
+    assert me.status_code == 200
+    workspace_id = me.json()["id"]
 
     # Create connectors
     connector1 = SchedulingConnector(
-        workspace_id=workspace.id,
+        workspace_id=workspace_id,
         type="calendly",
         config={"url": "https://calendly.com/user1"},
         is_active=True,
     )
     connector2 = SchedulingConnector(
-        workspace_id=workspace.id,
+        workspace_id=workspace_id,
         type="square",
         config={"api_key": "test_key"},
         is_active=False,
@@ -91,7 +80,7 @@ def test_list_connectors(
     db.commit()
 
     response = client.get(
-        f"{settings.API_V1_STR}/connectors/workspaces/{workspace.id}",
+        f"{settings.API_V1_STR}/connectors/workspaces/{workspace_id}",
         headers=normal_user_token_headers,
     )
     assert response.status_code == 200
@@ -107,21 +96,15 @@ def test_activate_connector(
     user = db.exec(select(User).where(User.email == settings.EMAIL_TEST_USER)).first()
     assert user is not None
 
-    # Create workspace
-    workspace = Workspace(
-        owner_id=user.id,
-        handle="test-workspace",
-        name="Test Workspace",
-        type="individual",
-        tone="professional",
-        timezone="UTC",
+    me = client.get(
+        f"{settings.API_V1_STR}/workspaces/me", headers=normal_user_token_headers
     )
-    db.add(workspace)
-    db.commit()
+    assert me.status_code == 200
+    workspace_id = me.json()["id"]
 
     # Create connector
     connector = SchedulingConnector(
-        workspace_id=workspace.id,
+        workspace_id=workspace_id,
         type="calendly",
         config={"url": "https://calendly.com/testuser"},
         is_active=False,
@@ -148,27 +131,21 @@ def test_activate_connector_deactivates_others(
     user = db.exec(select(User).where(User.email == settings.EMAIL_TEST_USER)).first()
     assert user is not None
 
-    # Create workspace
-    workspace = Workspace(
-        owner_id=user.id,
-        handle="test-workspace",
-        name="Test Workspace",
-        type="individual",
-        tone="professional",
-        timezone="UTC",
+    me = client.get(
+        f"{settings.API_V1_STR}/workspaces/me", headers=normal_user_token_headers
     )
-    db.add(workspace)
-    db.commit()
+    assert me.status_code == 200
+    workspace_id = me.json()["id"]
 
     # Create two connectors
     connector1 = SchedulingConnector(
-        workspace_id=workspace.id,
+        workspace_id=workspace_id,
         type="calendly",
         config={"url": "https://calendly.com/user1"},
         is_active=True,
     )
     connector2 = SchedulingConnector(
-        workspace_id=workspace.id,
+        workspace_id=workspace_id,
         type="square",
         config={"api_key": "test_key"},
         is_active=False,
@@ -199,21 +176,15 @@ def test_deactivate_connector(
     user = db.exec(select(User).where(User.email == settings.EMAIL_TEST_USER)).first()
     assert user is not None
 
-    # Create workspace
-    workspace = Workspace(
-        owner_id=user.id,
-        handle="test-workspace",
-        name="Test Workspace",
-        type="individual",
-        tone="professional",
-        timezone="UTC",
+    me = client.get(
+        f"{settings.API_V1_STR}/workspaces/me", headers=normal_user_token_headers
     )
-    db.add(workspace)
-    db.commit()
+    assert me.status_code == 200
+    workspace_id = me.json()["id"]
 
     # Create active connector
     connector = SchedulingConnector(
-        workspace_id=workspace.id,
+        workspace_id=workspace_id,
         type="calendly",
         config={"url": "https://calendly.com/testuser"},
         is_active=True,

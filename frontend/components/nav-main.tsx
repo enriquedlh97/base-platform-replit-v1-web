@@ -20,6 +20,7 @@ export function NavMain({
     title: string;
     url: string;
     icon?: Icon;
+    targetBlank?: boolean;
   }[];
 }) {
   const pathname = usePathname();
@@ -54,10 +55,17 @@ export function NavMain({
                 asChild
                 isActive={item.url !== "#" && pathname === item.url}
               >
-                <Link href={item.url}>
-                  {item.icon && <item.icon />}
-                  <span>{item.title}</span>
-                </Link>
+                {item.targetBlank ? (
+                  <a href={item.url} target="_blank" rel="noreferrer">
+                    {item.icon && <item.icon />}
+                    <span>{item.title}</span>
+                  </a>
+                ) : (
+                  <Link href={item.url}>
+                    {item.icon && <item.icon />}
+                    <span>{item.title}</span>
+                  </Link>
+                )}
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}

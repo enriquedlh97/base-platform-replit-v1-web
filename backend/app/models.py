@@ -715,6 +715,8 @@ class ConversationMessage(ConversationMessageBase, table=True):
     __tablename__ = "conversation_messages"
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     conversation_id: UUID = Field(foreign_key="conversations.id", ondelete="CASCADE")
+    # Optional idempotency key to de-duplicate client retries
+    idempotency_key: str | None = Field(default=None, max_length=128)
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
     # Relationships

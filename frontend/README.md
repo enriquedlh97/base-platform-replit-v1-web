@@ -33,7 +33,7 @@ This is a [Next.js 16](https://nextjs.org) frontend for an AI-powered scheduling
 
 2. Update `.env.local` with your configuration:
    ```env
-   NEXT_PUBLIC_API_URL=http://127.0.0.1:8000/api/v1
+   NEXT_PUBLIC_API_URL=http://127.0.0.1:8000
    NEXT_PUBLIC_SUPABASE_URL=http://127.0.0.1:54321
    NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
    ```
@@ -82,6 +82,8 @@ Regenerate the API client after backend schema changes:
 npm run generate:api
 ```
 
+Note: The public chat client normalizes the base URL to include `/api/v1` if omitted. You can set `NEXT_PUBLIC_API_URL` to either `http://127.0.0.1:8000` or `http://127.0.0.1:8000/api/v1`.
+
 ## Project Structure
 
 ```
@@ -124,7 +126,7 @@ frontend/
 
 - Responsive dashboard layout with shadcn/ui sidebar
 - Automatic mobile/desktop handling (no custom responsive logic)
-- Navigation: Dashboard, Services, Connectors, Settings
+- Navigation: Dashboard, Services, Connectors, Settings, Public Chat (opens in a new tab)
 - User menu with avatar and sign out
 
 **Knowledge Base:**
@@ -187,8 +189,9 @@ frontend/
 
 **Public Chat Interface:**
 
-- Customer-facing conversation widget
-- Real-time message handling
+- Public page at `/u/{workspace_handle}/chat` (Phase 1 shell)
+- Polling-based message fetch (every ~2.5s)
+- Conversation created automatically on first load
 
 **Testing:**
 

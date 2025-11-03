@@ -41,6 +41,10 @@ The backend follows a clean architecture pattern with clear separation of concer
   - `DELETE /connectors/{connector_id}` - Delete connector
 - `/api/v1/conversations/*` - Conversation tracking
 - `/api/v1/messages/*` - Message management
+- `/api/v1/public/*` - Public, anonymous chat endpoints (Phase 1 shell)
+  - `POST /public/conversations` → Create conversation by `workspace_handle`
+  - `POST /public/conversations/{conversation_id}/messages` → Post user message
+  - `GET /public/conversations/{conversation_id}/messages?since&limit` → List messages (polling)
 
 ## Key Design Decisions
 
@@ -299,6 +303,10 @@ When the tests are run, a file `htmlcov/index.html` is generated, you can open i
 ## Migrations
 
 **Important**: This project uses a **unified database architecture**:
+### Recent Additive Changes
+
+- `conversation_messages.idempotency_key` (nullable, indexed) added to support safe client retries.
+
 - **Supabase** handles authentication, storage, and database hosting
 - **Alembic** manages all database schema migrations and schema changes
 - **No local PostgreSQL service** - all database operations go through Supabase
