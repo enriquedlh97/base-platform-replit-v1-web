@@ -1047,6 +1047,14 @@ export type UserCreate = {
      * Setup Completed
      */
     setup_completed?: boolean;
+    /**
+     * Profile Type
+     */
+    profile_type?: string | null;
+    /**
+     * Faqs
+     */
+    faqs?: string | null;
 };
 
 /**
@@ -1111,6 +1119,14 @@ export type UserPublic = {
      * Setup Completed
      */
     setup_completed?: boolean;
+    /**
+     * Profile Type
+     */
+    profile_type?: string | null;
+    /**
+     * Faqs
+     */
+    faqs?: string | null;
     /**
      * Id
      */
@@ -1180,6 +1196,14 @@ export type UserUpdate = {
      */
     setup_completed?: boolean;
     /**
+     * Profile Type
+     */
+    profile_type?: string | null;
+    /**
+     * Faqs
+     */
+    faqs?: string | null;
+    /**
      * Password
      */
     password?: string | null;
@@ -1239,6 +1263,14 @@ export type UserUpdateMe = {
      * Setup Completed
      */
     setup_completed?: boolean | null;
+    /**
+     * Profile Type
+     */
+    profile_type?: string | null;
+    /**
+     * Faqs
+     */
+    faqs?: string | null;
 };
 
 /**
@@ -1335,6 +1367,10 @@ export type WorkspacePublic = {
      * Is Active
      */
     is_active: boolean;
+    /**
+     * Knowledge Base
+     */
+    knowledge_base?: string | null;
     /**
      * Created At
      */
@@ -1491,6 +1527,10 @@ export type WorkspaceUpdate = {
      * Is Active
      */
     is_active?: boolean | null;
+    /**
+     * Knowledge Base
+     */
+    knowledge_base?: string | null;
 };
 
 export type LoginTestTokenData = {

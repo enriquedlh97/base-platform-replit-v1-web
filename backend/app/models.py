@@ -491,6 +491,7 @@ class WorkspaceBase(SQLModel):
     tone: str = Field(max_length=50)
     timezone: str = Field(max_length=100)
     is_active: bool = Field(default=True)
+    knowledge_base: str | None = None
 
 
 class WorkspaceCreate(SQLModel):
@@ -512,6 +513,7 @@ class WorkspaceUpdate(SQLModel):
     tone: str | None = Field(default=None, max_length=50)
     timezone: str | None = Field(default=None, max_length=100)
     is_active: bool | None = None
+    knowledge_base: str | None = None
 
 
 class Workspace(WorkspaceBase, table=True):
@@ -545,6 +547,7 @@ class WorkspacePublic(SQLModel):
     tone: str
     timezone: str
     is_active: bool
+    knowledge_base: str | None = None
     created_at: datetime
     updated_at: datetime
 

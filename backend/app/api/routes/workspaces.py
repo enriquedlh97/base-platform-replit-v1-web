@@ -1,6 +1,7 @@
 """Workspace management routes."""
 
 import logging
+import re
 from datetime import datetime, timezone
 from typing import Any
 from uuid import UUID
@@ -78,13 +79,61 @@ def create_workspace(
 
 @router.get("/me", response_model=WorkspacePublic)
 def get_my_workspace(*, session: SessionDep, current_user: CurrentUser) -> Any:
-    """Get current user's workspace."""
+    """
+    Get current user's workspace. Auto-creates one if it doesn't exist.
+    This ensures users can immediately access features like the knowledge base
+    without requiring a setup wizard.
+    """
     statement: SelectOfScalar[Workspace] = select(Workspace).where(
         Workspace.owner_id == current_user.id
     )
     workspace = session.exec(statement).first()
+
     if not workspace:
-        raise HTTPException(status_code=404, detail="No workspace found")
+        # Auto-create workspace with default values
+        # Generate handle from email or use UUID-based fallback
+        base_handle = current_user.email.split("@")[0].lower()
+        # Sanitize handle: only lowercase letters, numbers, and hyphens
+        handle = re.sub(r"[^a-z0-9-]", "", base_handle)[:50]  # Limit length
+        if not handle:  # Fallback if email produces invalid handle
+            handle = f"user-{str(current_user.id)[:8]}"
+
+        # Ensure handle is unique
+        original_handle = handle
+        counter = 1
+        while True:
+            handle_statement: SelectOfScalar[Workspace] = select(Workspace).where(
+                Workspace.handle == handle
+            )
+            existing_handle = session.exec(handle_statement).first()
+            if not existing_handle:
+                break
+            handle = f"{original_handle}-{counter}"
+            counter += 1
+            if counter > 1000:  # Safety limit
+                # Fallback to UUID-based handle
+                handle = f"user-{str(current_user.id).replace('-', '')[:20]}"
+                break
+
+        workspace = Workspace(
+            owner_id=current_user.id,
+            handle=handle,
+            name="My Workspace",
+            type="individual",
+            tone="professional",
+            timezone="UTC",
+            is_active=True,
+            knowledge_base=None,
+            created_at=datetime.now(timezone.utc),
+            updated_at=datetime.now(timezone.utc),
+        )
+        session.add(workspace)
+        session.commit()
+        session.refresh(workspace)
+        logger.info(
+            f"Auto-created workspace for user {current_user.id} with handle '{handle}'"
+        )
+
     return workspace
 
 

@@ -7,10 +7,10 @@ import { createClient } from "@/lib/supabase/server";
  * Intercepts requests and:
  * - Checks authentication status from cookies
  * - Redirects unauthenticated users from protected routes to /login
- * - Redirects authenticated users from auth pages to /dashboard
+ * - Redirects authenticated users from auth pages to /knowledge-base
  * - Allows public routes like /, /login, /signup, and /c/* (public chat)
  *
- * Protected routes: /dashboard/*
+ * Protected routes: /dashboard/*, /knowledge-base
  * Public routes: /, /login, /signup, /c/*
  */
 
@@ -30,16 +30,20 @@ export async function proxy(request: NextRequest) {
       data: { session },
     } = await supabase.auth.getSession();
 
-    // If authenticated and on login/signup, redirect to dashboard
+    // If authenticated and on login/signup, redirect to knowledge base
     if (session && (pathname === "/login" || pathname === "/signup")) {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
+      return NextResponse.redirect(new URL("/knowledge-base", request.url));
     }
 
     return NextResponse.next();
   }
 
   // Protected routes - check authentication
-  if (pathname.startsWith("/dashboard") || pathname.startsWith("/workspace")) {
+  if (
+    pathname.startsWith("/dashboard") ||
+    pathname.startsWith("/knowledge-base") ||
+    pathname.startsWith("/workspace")
+  ) {
     const supabase = await createClient();
     const {
       data: { session },

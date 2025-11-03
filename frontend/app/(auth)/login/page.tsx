@@ -12,7 +12,7 @@ import { LoginForm } from "@/components/login-form";
  */
 function LoginPageContent() {
   const searchParams = useSearchParams();
-  const redirectTo = searchParams.get("redirect") || "/dashboard";
+  const redirectTo = searchParams.get("redirect") || "/knowledge-base";
 
   const handleSuccess = () => {
     // Force a hard navigation to ensure session is picked up
@@ -24,7 +24,7 @@ function LoginPageContent() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={<LoginForm redirectTo="/dashboard" />}>
+    <Suspense fallback={<LoginForm redirectTo="/knowledge-base" />}>
       <LoginPageContent />
     </Suspense>
   );

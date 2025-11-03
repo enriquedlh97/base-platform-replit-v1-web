@@ -34,7 +34,7 @@ interface LoginFormProps extends React.ComponentProps<"div"> {
 export function LoginForm({
   className,
   onSuccess,
-  redirectTo = "/dashboard",
+  redirectTo = "/knowledge-base",
   ...props
 }: LoginFormProps) {
   const [isLoading, setIsLoading] = useState(false);

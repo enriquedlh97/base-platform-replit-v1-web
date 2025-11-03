@@ -130,8 +130,8 @@ const navigationData = {
   ],
   documents: [
     {
-      name: "Data Library",
-      url: "#",
+      name: "Knowledge Base",
+      url: "/knowledge-base",
       icon: IconDatabase,
     },
     {

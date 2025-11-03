@@ -3812,6 +3812,17 @@
             "type": "boolean",
             "title": "Setup Completed",
             "default": false
+          },
+          "profile_type": {
+            "anyOf": [
+              { "type": "string", "maxLength": 50 },
+              { "type": "null" }
+            ],
+            "title": "Profile Type"
+          },
+          "faqs": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Faqs"
           }
         },
         "type": "object",
@@ -3901,6 +3912,17 @@
             "type": "boolean",
             "title": "Setup Completed",
             "default": false
+          },
+          "profile_type": {
+            "anyOf": [
+              { "type": "string", "maxLength": 50 },
+              { "type": "null" }
+            ],
+            "title": "Profile Type"
+          },
+          "faqs": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Faqs"
           },
           "id": { "type": "string", "format": "uuid", "title": "Id" }
         },
@@ -3993,6 +4015,17 @@
             "title": "Setup Completed",
             "default": false
           },
+          "profile_type": {
+            "anyOf": [
+              { "type": "string", "maxLength": 50 },
+              { "type": "null" }
+            ],
+            "title": "Profile Type"
+          },
+          "faqs": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Faqs"
+          },
           "password": {
             "anyOf": [
               { "type": "string", "maxLength": 40, "minLength": 8 },
@@ -4077,6 +4110,17 @@
           "setup_completed": {
             "anyOf": [{ "type": "boolean" }, { "type": "null" }],
             "title": "Setup Completed"
+          },
+          "profile_type": {
+            "anyOf": [
+              { "type": "string", "maxLength": 50 },
+              { "type": "null" }
+            ],
+            "title": "Profile Type"
+          },
+          "faqs": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Faqs"
           }
         },
         "type": "object",
@@ -4160,6 +4204,10 @@
           "tone": { "type": "string", "title": "Tone" },
           "timezone": { "type": "string", "title": "Timezone" },
           "is_active": { "type": "boolean", "title": "Is Active" },
+          "knowledge_base": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Knowledge Base"
+          },
           "created_at": {
             "type": "string",
             "format": "date-time",
@@ -4364,6 +4412,10 @@
           "is_active": {
             "anyOf": [{ "type": "boolean" }, { "type": "null" }],
             "title": "Is Active"
+          },
+          "knowledge_base": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Knowledge Base"
           }
         },
         "type": "object",

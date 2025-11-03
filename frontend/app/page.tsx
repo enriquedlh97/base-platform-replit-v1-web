@@ -21,9 +21,9 @@ export default async function HomePage() {
     data: { session },
   } = await supabase.auth.getSession();
 
-  // Redirect authenticated users to dashboard
+  // Redirect authenticated users to knowledge base
   if (session) {
-    redirect("/dashboard");
+    redirect("/knowledge-base");
   }
 
   return (
