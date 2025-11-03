@@ -6,6 +6,16 @@ This is the **unified backend** for the Base Platform scheduling assistant platf
 
 **Phase 1: Core Models & Authentication Foundation** ✅ **COMPLETE**
 
+**Phase 2 (MVP): Public Chat Agent Streaming** ✅ **COMPLETE**
+
+- Added SSE endpoint to stream assistant replies:
+  - `GET /api/v1/public/conversations/{conversation_id}/stream` (text/event-stream)
+- Minimal in-process agent using Groq via `ChatGroq` (aligned with ava best practices):
+  - Requires `GROQ_API_KEY` in backend environment
+  - Defaults: `TEXT_MODEL_NAME=llama-3.3-70b-versatile`, `MODEL_TEMPERATURE=0.7`
+- On `message_end`, the assistant’s full reply is persisted to `conversation_messages`.
+- Event shapes: `message_start`, `delta`, `message_end`, `tool_call`, `tool_result`, `error`.
+
 All Phase 1 features are implemented and tested:
 - ✅ Workspace models and CRUD operations
 - ✅ Workspace services management
@@ -41,10 +51,11 @@ The backend follows a clean architecture pattern with clear separation of concer
   - `DELETE /connectors/{connector_id}` - Delete connector
 - `/api/v1/conversations/*` - Conversation tracking
 - `/api/v1/messages/*` - Message management
-- `/api/v1/public/*` - Public, anonymous chat endpoints (Phase 1 shell)
+- `/api/v1/public/*` - Public, anonymous chat endpoints
   - `POST /public/conversations` → Create conversation by `workspace_handle`
   - `POST /public/conversations/{conversation_id}/messages` → Post user message
-  - `GET /public/conversations/{conversation_id}/messages?since&limit` → List messages (polling)
+  - `GET /public/conversations/{conversation_id}/messages?since&limit` → List messages (polling/sync)
+  - `GET /public/conversations/{conversation_id}/stream` → Stream assistant reply (SSE)
 
 ## Key Design Decisions
 
@@ -78,6 +89,7 @@ The backend follows a clean architecture pattern with clear separation of concer
 * [Docker](https://www.docker.com/).
 * [uv](https://docs.astral.sh/uv/) for Python package and environment management.
 * [Supabase](https://supabase.com) - Local development requires Supabase services running
+* Groq API key in backend environment: `GROQ_API_KEY`
 
 ## Quick Start
 
@@ -92,6 +104,9 @@ nvm use && yarn start
 cd backend
 source .venv/bin/activate
 bash scripts/prestart.sh  # Run migrations and initial setup (required after DB reset)
+export GROQ_API_KEY=sk_...            # required for the agent
+export TEXT_MODEL_NAME=llama-3.3-70b-versatile   # optional (default)
+export MODEL_TEMPERATURE=0.7                    # optional (default)
 fastapi run app/main.py --reload
 ```
 
@@ -105,6 +120,11 @@ Always run this after resetting the Supabase database.
 ### 3. Verify
 - API available at: http://localhost:8000
 - API docs at: http://localhost:8000/api/v1/docs
+- Stream test (replace with a real `conversation_id`):
+  ```bash
+  curl -N -H 'Accept: text/event-stream' \
+    http://127.0.0.1:8000/api/v1/public/conversations/<conversation_id>/stream
+  ```
 - Supabase dashboard at: http://localhost:54323
 
 ## Development Workflow
@@ -235,12 +255,13 @@ This runs:
 - Coverage reporting
 - Generates `htmlcov/index.html` for coverage analysis
 
-**Current Test Status:** 79 tests passing, including:
+**Current Test Status:** 82 tests passing, including:
 - 10 workspace tests
 - 5 workspace service tests
 - 7 scheduling connector tests
 - 8 conversation tests
 - Plus all legacy tests
+ - 3 public chat streaming tests (SSE: happy path, error, 404)
 
 ### Test Structure
 Tests are organized in `app/tests/`:
@@ -306,6 +327,8 @@ When the tests are run, a file `htmlcov/index.html` is generated, you can open i
 ### Recent Additive Changes
 
 - `conversation_messages.idempotency_key` (nullable, indexed) added to support safe client retries.
+- `GET /public/conversations/{conversation_id}/stream` SSE endpoint
+- Minimal Groq-backed agent (reads `GROQ_API_KEY` from settings)
 
 - **Supabase** handles authentication, storage, and database hosting
 - **Alembic** manages all database schema migrations and schema changes

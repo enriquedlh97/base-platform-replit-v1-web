@@ -104,6 +104,11 @@ class Settings(BaseSettings):
     FIRST_SUPERUSER: EmailStr
     FIRST_SUPERUSER_PASSWORD: str
 
+    # AI/Agent settings
+    GROQ_API_KEY: str | None = None
+    TEXT_MODEL_NAME: str = "llama-3.3-70b-versatile"
+    MODEL_TEMPERATURE: float = 0.7
+
     def _check_default_secret(self, var_name: str, value: str | None) -> None:
         if value == "changethis":
             message = (

@@ -22,6 +22,9 @@ dependencies = [
     "sentry-sdk[fastapi]<2.0.0,>=1.40.6",
     "pyjwt<3.0.0,>=2.8.0",
     "supabase>=2.16.0",
+    # Agent dependencies
+    "langgraph==0.2.60",
+    "langchain-groq==0.1.6",
 ]
 
 [tool.uv]

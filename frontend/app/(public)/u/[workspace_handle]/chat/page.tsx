@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { PublicChatApi } from "@/lib/api/public/client";
+import { env } from "@/lib/env";
 
 export default function PublicChatPage() {
   const params = useParams<{ workspace_handle: string }>();
@@ -18,7 +19,11 @@ export default function PublicChatPage() {
   const [since, setSince] = useState<string | null>(null);
   const [input, setInput] = useState("");
   const [isSending, setIsSending] = useState(false);
+  const [streamText, setStreamText] = useState<string>("");
   const pollRef = useRef<NodeJS.Timeout | null>(null);
+  const streamRef = useRef<EventSource | null>(null);
+  const isStreamingRef = useRef<boolean>(false);
+  const seenMessageIdsRef = useRef<Set<string>>(new Set());
 
   // Create conversation once
   useEffect(() => {
@@ -36,25 +41,32 @@ export default function PublicChatPage() {
     };
   }, [workspaceHandle]);
 
-  // Poll messages
+  // Poll messages (disabled while streaming)
   useEffect(() => {
     if (!conversationId) return;
     const poll = async () => {
+      if (isStreamingRef.current) return; // pause polling during SSE
       try {
         const resp = await PublicChatApi.listMessages(conversationId, {
           since: since ?? undefined,
           limit: 50,
         });
         if (resp.messages.length > 0) {
-          setMessages((prev) => [
-            ...prev,
-            ...resp.messages.map((m) => ({
-              id: m.id,
-              role: m.role,
-              content: m.content,
-              created_at: m.created_at,
-            })),
-          ]);
+          setMessages((prev) => {
+            const next = [...prev];
+            for (const m of resp.messages) {
+              if (!seenMessageIdsRef.current.has(m.id)) {
+                next.push({
+                  id: m.id,
+                  role: m.role,
+                  content: m.content,
+                  created_at: m.created_at,
+                });
+                seenMessageIdsRef.current.add(m.id);
+              }
+            }
+            return next;
+          });
           if (resp.next_since) setSince(resp.next_since);
         }
       } catch {
@@ -79,13 +91,94 @@ export default function PublicChatPage() {
     if (!conversationId || !input.trim() || isSending) return;
     setIsSending(true);
     try {
+      // Optimistically append the user message
+      const nowIso = new Date().toISOString();
+      const optimisticUser = {
+        id: `local-user-${Date.now()}`,
+        role: "user",
+        content: input.trim(),
+        created_at: nowIso,
+      };
+      setMessages((prev) => {
+        const next = [...prev, optimisticUser];
+        return next;
+      });
+      seenMessageIdsRef.current.add(optimisticUser.id);
+
       await PublicChatApi.postMessage(conversationId, {
         role: "user",
         content: input.trim(),
       });
       setInput("");
-      // Force a poll right away
-      setSince(null);
+      // Start SSE stream for assistant reply
+      try {
+        // Close previous stream if any
+        if (streamRef.current) {
+          streamRef.current.close();
+          streamRef.current = null;
+        }
+        // Build API base (normalize to /api/v1 like our client)
+        const base = (() => {
+          const trimmed = env.NEXT_PUBLIC_API_URL.replace(/\/$/, "");
+          return trimmed.endsWith("/api/v1") ? trimmed : `${trimmed}/api/v1`;
+        })();
+        const url = `${base}/public/conversations/${conversationId}/stream`;
+        const es = new EventSource(url, { withCredentials: false });
+        streamRef.current = es;
+        setStreamText("");
+        isStreamingRef.current = true;
+
+        es.addEventListener("delta", (ev) => {
+          try {
+            const data = JSON.parse((ev as MessageEvent).data) as {
+              text_chunk: string;
+            };
+            setStreamText((prev) => prev + (data.text_chunk || ""));
+          } catch {
+            // ignore parse errors
+          }
+        });
+        es.addEventListener("message_end", (ev) => {
+          try {
+            const data = JSON.parse((ev as MessageEvent).data) as {
+              full_text: string;
+            };
+            // Clear streaming text and trigger polling refresh
+            const text = data.full_text || "";
+            setStreamText("");
+            // Optimistically append assistant final message so UI doesn't flicker blank
+            if (text) {
+              const optimisticAssistant = {
+                id: `local-assistant-${Date.now()}`,
+                role: "assistant",
+                content: text,
+                created_at: new Date().toISOString(),
+              };
+              setMessages((prev) => [...prev, optimisticAssistant]);
+            }
+            // trigger one immediate poll after stream ends
+            isStreamingRef.current = false;
+            // do not reset since; next poll will fetch only new items
+          } catch {
+            setStreamText("");
+            isStreamingRef.current = false;
+          }
+          es.close();
+          streamRef.current = null;
+        });
+        es.addEventListener("error", () => {
+          // On error, close and fallback to polling
+          if (streamRef.current) {
+            streamRef.current.close();
+            streamRef.current = null;
+          }
+          setStreamText("");
+          isStreamingRef.current = false;
+        });
+      } catch {
+        // Fallback to polling
+        isStreamingRef.current = false;
+      }
     } catch {
       // noop MVP
     } finally {
@@ -107,6 +200,12 @@ export default function PublicChatPage() {
           {sorted.length === 0 && (
             <div className="text-sm text-muted-foreground">
               Say hi to start the conversation.
+            </div>
+          )}
+          {streamText && (
+            <div className="flex flex-col">
+              <span className="text-xs text-muted-foreground">assistant</span>
+              <span>{streamText}</span>
             </div>
           )}
         </div>

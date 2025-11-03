@@ -84,6 +84,13 @@ npm run generate:api
 
 Note: The public chat client normalizes the base URL to include `/api/v1` if omitted. You can set `NEXT_PUBLIC_API_URL` to either `http://127.0.0.1:8000` or `http://127.0.0.1:8000/api/v1`.
 
+### Streaming Chat
+
+- Public page at `/u/{workspace_handle}/chat` streams assistant replies over SSE.
+- Optimistic UI: user message appears immediately; assistant final text is appended on `message_end`.
+- Idle sync: a lightweight polling loop (every ~2.5s) runs only while idle to pick up messages created by other clients; it pauses during active streams.
+- SSE endpoint: `GET /api/v1/public/conversations/{conversation_id}/stream`.
+
 ## Project Structure
 
 ```
@@ -189,9 +196,8 @@ frontend/
 
 **Public Chat Interface:**
 
-- Public page at `/u/{workspace_handle}/chat` (Phase 1 shell)
-- Polling-based message fetch (every ~2.5s)
-- Conversation created automatically on first load
+- Public page at `/u/{workspace_handle}/chat`
+- SSE streaming replies; conversation created automatically on first load
 
 **Testing:**
 
