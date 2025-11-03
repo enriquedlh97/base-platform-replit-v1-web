@@ -48,6 +48,13 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) to see the application.
 
+#### Using the app
+
+1. Log in or sign up
+2. Navigate to Knowledge Base
+3. Paste your Calendly URL at the top and click Save
+4. Reload the page to confirm the link persists
+
 ### Code Quality
 
 ```bash
@@ -127,6 +134,7 @@ frontend/
 - Auto-save functionality with change indicators
 - Character count display
 - Workspace auto-creation on first access
+- Calendly link input at the top of the page (stored as a SchedulingConnector with type "calendly"; persists across sessions)
 
 **Workspace Management:**
 

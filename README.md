@@ -21,7 +21,7 @@ A scheduling-first platform where freelancers and consulting businesses can spin
 
 ### ✅ Phase 2: Frontend MVP (Oct 2025)
 - **Authentication System**: Login/signup pages with Supabase SSR integration
-- **Knowledge Base**: Default landing page with unlimited text editor for business information
+- **Knowledge Base**: Default landing page with unlimited text editor for business information (now includes a minimal Calendly link input saved as a SchedulingConnector)
 - **Dashboard**: Responsive layout with shadcn/ui sidebar component
 - **Workspace Management**: Auto-created on first access, settings page with full CRUD
 - **API Integration**: Type-safe client with automatic auth token injection
@@ -90,6 +90,8 @@ A scheduling-first platform where freelancers and consulting businesses can spin
    - API Docs: http://localhost:8000/api/v1/docs
    - Supabase Studio: http://localhost:54323
 
+   After login, navigate to Knowledge Base and add your Calendly link at the top, then click Save.
+
 **Note**: After signing up, you'll be redirected to the Knowledge Base page where you can immediately start adding business information. Workspaces are automatically created on first access.
 
 5. **Generate API Client** (when backend schema changes)
@@ -154,7 +156,7 @@ A scheduling-first platform where freelancers and consulting businesses can spin
 
 ### 🔄 Upcoming Phases (Phase 3+)
 - **Services Management**: CRUD for workspace services
-- **Scheduling Connectors**: Calendly integration UI
+- **Scheduling Connectors**: Full connectors management UI and provider-specific flows (Calendly MVP link input already available in Knowledge Base)
 - **Public Chat Interface**: Customer-facing conversation widget
 - **Agent System**: AI-powered conversation handling
 - **Conversation History**: View and manage past interactions

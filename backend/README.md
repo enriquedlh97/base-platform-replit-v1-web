@@ -35,6 +35,10 @@ The backend follows a clean architecture pattern with clear separation of concer
   - `PATCH /workspaces/{id}` - Updates workspace including knowledge_base
 - `/api/v1/workspace-services/*` - Service management
 - `/api/v1/connectors/*` - Connector management
+  - `GET /connectors/workspaces/{workspace_id}` - List connectors for workspace
+  - `POST /connectors/workspaces/{workspace_id}` - Create connector
+  - `PATCH /connectors/{connector_id}` - Update connector
+  - `DELETE /connectors/{connector_id}` - Delete connector
 - `/api/v1/conversations/*` - Conversation tracking
 - `/api/v1/messages/*` - Message management
 
@@ -58,6 +62,7 @@ The backend follows a clean architecture pattern with clear separation of concer
 - Connector configs stored as JSON for extensibility
 - Only one active connector per workspace at a time
 - Supports multiple connector types (Calendly, Square, AgendaPro)
+  - For Calendly MVP, the frontend Knowledge Base page saves a connector with `type: "calendly"` and `config: { "link": "https://calendly.com/<username>" }`.
 
 ### Conversation Tracking
 - Messages support multiple channels (web, instagram, whatsapp, sms, messenger, chatgpt, phone)
