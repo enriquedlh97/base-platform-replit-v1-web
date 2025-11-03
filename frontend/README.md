@@ -120,9 +120,17 @@ frontend/
 - Navigation: Dashboard, Services, Connectors, Settings
 - User menu with avatar and sign out
 
+**Knowledge Base:**
+
+- Knowledge base editor as default landing page for authenticated users
+- Unlimited text input for business information
+- Auto-save functionality with change indicators
+- Character count display
+- Workspace auto-creation on first access
+
 **Workspace Management:**
 
-- Workspace setup wizard for first-time users
+- Workspaces auto-created when needed (no setup wizard required)
 - Dashboard home with workspace overview
 - Settings page with edit and delete functionality
 - Workspace CRUD hooks using TanStack Query
@@ -132,7 +140,7 @@ frontend/
 **Landing Page:**
 
 - Marketing content for unauthenticated users
-- Auto-redirect authenticated users to dashboard
+- Auto-redirect authenticated users to knowledge base
 - Hero section, feature cards, and footer
 
 **Code Quality & Development Tools:**

@@ -23,13 +23,16 @@ The backend follows a clean architecture pattern with clear separation of concer
 ### Models (`app/models.py`)
 - **User**: Base user model with extended business profile fields (business_name, tagline, bio, phone, website, social_links, setup_completed)
 - **Workspace**: One workspace per user, globally unique handle, tone and timezone configuration
+  - **knowledge_base**: Unlimited text field for storing business information used by AI agent
 - **WorkspaceService**: Services offered by the workspace (consultation, audit, workshop, etc.)
 - **SchedulingConnector**: External scheduling integration configs (Calendly, Square, etc.)
 - **Conversation**: Visitor conversations with the AI agent
 - **ConversationMessage**: Individual messages within conversations
 
 ### API Routes
-- `/api/v1/workspaces/*` - Workspace management
+- `/api/v1/workspaces/*` - Workspace management (includes knowledge_base field)
+  - `GET /workspaces/me` - Auto-creates workspace if missing
+  - `PATCH /workspaces/{id}` - Updates workspace including knowledge_base
 - `/api/v1/workspace-services/*` - Service management
 - `/api/v1/connectors/*` - Connector management
 - `/api/v1/conversations/*` - Conversation tracking
@@ -40,6 +43,10 @@ The backend follows a clean architecture pattern with clear separation of concer
 ### One Workspace Per User
 - Enforced via unique database constraint on `workspace.owner_id`
 - Simplifies MVP architecture
+- **Auto-creation**: Workspaces are automatically created when accessing `/api/v1/workspaces/me` if none exists
+  - Generates unique handle from user email
+  - Sets sensible defaults (type: individual, tone: professional, timezone: UTC)
+  - Eliminates need for setup wizard
 - Future: Helper users can be added via separate table
 
 ### Globally Unique Handles
@@ -75,8 +82,16 @@ nvm use && yarn start
 ```bash
 cd backend
 source .venv/bin/activate
+bash scripts/prestart.sh  # Run migrations and initial setup (required after DB reset)
 fastapi run app/main.py --reload
 ```
+
+**Note**: The `prestart.sh` script:
+- Waits for database to be ready
+- Runs Alembic migrations (`alembic upgrade head`)
+- Creates initial data (superuser, etc.)
+
+Always run this after resetting the Supabase database.
 
 ### 3. Verify
 - API available at: http://localhost:8000

@@ -21,10 +21,11 @@ A scheduling-first platform where freelancers and consulting businesses can spin
 
 ### ✅ Phase 2: Frontend MVP (Oct 2025)
 - **Authentication System**: Login/signup pages with Supabase SSR integration
+- **Knowledge Base**: Default landing page with unlimited text editor for business information
 - **Dashboard**: Responsive layout with shadcn/ui sidebar component
-- **Workspace Management**: Setup wizard and settings page with full CRUD
+- **Workspace Management**: Auto-created on first access, settings page with full CRUD
 - **API Integration**: Type-safe client with automatic auth token injection
-- **Landing Page**: Marketing content with auto-redirect for authenticated users
+- **Landing Page**: Marketing content with auto-redirect to knowledge base for authenticated users
 - **Development Tools**: ESLint, Prettier, pre-commit hooks, npm migration
 
 ## 🏗️ Architecture
@@ -71,6 +72,7 @@ A scheduling-first platform where freelancers and consulting businesses can spin
    cd backend
    uv sync                    # Install dependencies
    source .venv/bin/activate  # Activate virtual environment
+   bash scripts/prestart.sh   # Run migrations and initial setup (first time or after DB reset)
    fastapi run app/main.py --reload
    ```
 
@@ -83,10 +85,12 @@ A scheduling-first platform where freelancers and consulting businesses can spin
    ```
 
 4. **Access the Application**
-   - Frontend: http://localhost:3000
+   - Frontend: http://localhost:3000 (redirects to /knowledge-base after login)
    - Backend API: http://localhost:8000
    - API Docs: http://localhost:8000/api/v1/docs
    - Supabase Studio: http://localhost:54323
+
+**Note**: After signing up, you'll be redirected to the Knowledge Base page where you can immediately start adding business information. Workspaces are automatically created on first access.
 
 5. **Generate API Client** (when backend schema changes)
    ```bash
@@ -121,10 +125,12 @@ A scheduling-first platform where freelancers and consulting businesses can spin
 
 1. **Make Changes**: Modify models in `backend/app/models.py`
 2. **Create Migration**: `alembic revision --autogenerate -m "description"`
-3. **Apply Migration**: `alembic upgrade head`
+3. **Apply Migration**: Run `bash scripts/prestart.sh` (which runs `alembic upgrade head`) or manually: `alembic upgrade head`
 4. **Run Tests**: `bash scripts/test.sh`
 5. **Generate API Client**: `./scripts/generate-api-client.sh`
 6. **Commit**: Changes are automatically reflected in development containers
+
+**Note**: After resetting the database (e.g., `yarn reset` in supabase), always run `bash scripts/prestart.sh` to recreate tables and apply migrations.
 
 ## 📋 Current Implementation Plan
 
@@ -140,6 +146,11 @@ A scheduling-first platform where freelancers and consulting businesses can spin
   - Scheduling connector configuration
   - Conversation and message tracking
   - Extended user business profiles
+- **Phase 2: Knowledge Base Feature** 🎉
+  - Knowledge base editor as default landing page
+  - Unlimited text input for business information
+  - Auto-creation of workspaces on first access
+  - Streamlined onboarding (no setup wizard required)
 
 ### 🔄 Upcoming Phases (Phase 3+)
 - **Services Management**: CRUD for workspace services
@@ -155,8 +166,8 @@ A scheduling-first platform where freelancers and consulting businesses can spin
 # Supabase (database, auth, storage)
 cd supabase && nvm use && yarn start
 
-# Backend API server
-cd backend && source .venv/bin/activate && fastapi run app/main.py --reload
+# Backend API server (run prestart.sh first after DB reset)
+cd backend && source .venv/bin/activate && bash scripts/prestart.sh && fastapi run app/main.py --reload
 
 # Frontend dev server
 cd frontend && nvm use && npm run dev
@@ -191,10 +202,10 @@ cd backend && bash scripts/test.sh
 
 ## 📊 Current Statistics
 
-- **Database Models**: 10 total
+- **Database Models**: 10 total (including knowledge_base field)
 - **API Endpoints**: 15+ CRUD routes
 - **Backend Tests**: 79 tests passing
-- **Frontend Pages**: 6 pages (landing, login, signup, dashboard, setup, settings)
+- **Frontend Pages**: 6 pages (landing, login, signup, dashboard, knowledge-base, settings)
 - **UI Components**: 15+ shadcn/ui components integrated
 - **Code Quality**: ESLint + Prettier + pre-commit hooks
 - **Type Safety**: Full end-to-end TypeScript coverage
