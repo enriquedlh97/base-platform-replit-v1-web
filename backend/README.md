@@ -279,7 +279,7 @@ Tests are organized in `app/tests/`:
 
 **Start Supabase first:**
 ```bash
-cd supabase && nvm use && yarn start
+cd supabase && nvm use && npm start
 ```
 
 **Then in another terminal:**
@@ -360,7 +360,7 @@ $ alembic revision --autogenerate -m "Add column last_name to User model"
 $ alembic upgrade head
 ```
 
-**Note**: The database connection is configured to use Supabase. Make sure your Supabase services are running (`cd supabase && nvm use && yarn supa start`) before running migrations.
+**Note**: The database connection is configured to use Supabase. Make sure your Supabase services are running (`cd supabase && nvm use && npm start`) before running migrations.
 
 ## Executing Commands Inside Docker
 
@@ -491,7 +491,7 @@ uv run python scripts/seed_db.py
 
 - The script will insert sample data into your Supabase database
 - It is safe to run multiple times; it will not create duplicates
-- **Note**: Make sure your Supabase services are running (`cd supabase && yarn supa start`) before seeding
+- **Note**: Make sure your Supabase services are running (`cd supabase && nvm use && npm start`) before seeding
 
 ## Troubleshooting
 

@@ -1,8 +1,10 @@
 from unittest.mock import patch
 from uuid import UUID, uuid4
 
+import pytest
 from fastapi.testclient import TestClient
-from httpx import Response
+from gotrue.errors import AuthRetryableError
+from httpx import ReadTimeout, Response
 from sqlmodel import Session, select
 from sqlmodel.sql._expression_select_cls import SelectOfScalar
 
@@ -334,9 +336,23 @@ def test_delete_user_current_super_user_error(
 def test_delete_user_without_privileges(
     client: TestClient, normal_user_token_headers: dict[str, str], db: Session
 ) -> None:
+    """
+    Test that a normal user cannot delete another user.
+
+    This test requires Supabase to be running. If Supabase is unavailable,
+    the test will be skipped with a clear message.
+    """
     username: str = random_email()
     user_in: UserCreate = UserCreate(email=username)
-    user: User = crud.create_user(session=db, user_create=user_in)
+
+    try:
+        user: User = crud.create_user(session=db, user_create=user_in)
+    except (AuthRetryableError, ReadTimeout, TimeoutError) as e:
+        # Skip test if Supabase is unavailable (not running or slow)
+        pytest.skip(
+            f"Skipping test: Supabase unavailable (timeout/connection error: {e}). "
+            "Ensure Supabase is running for this test."
+        )
 
     # Use the real Supabase flow; the normal_user fixture ensures the user exists.
     # The API should correctly reject the deletion based on privileges.

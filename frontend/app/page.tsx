@@ -15,11 +15,22 @@ import {
  * Public landing page that redirects authenticated users to dashboard.
  * Shows marketing content for unauthenticated users.
  */
-export default async function HomePage() {
+export default async function HomePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ code?: string }>;
+}) {
   const supabase = await createClient();
   const {
     data: { session },
   } = await supabase.auth.getSession();
+
+  // Handle email confirmation codes that might land on root page
+  // Redirect to auth callback handler which will exchange the code
+  const params = await searchParams;
+  if (params.code && !session) {
+    redirect(`/auth/callback?code=${params.code}`);
+  }
 
   // Redirect authenticated users to knowledge base
   if (session) {

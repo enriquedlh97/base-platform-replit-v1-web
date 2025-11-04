@@ -2,10 +2,14 @@ import { createClient } from "@/lib/supabase/server";
 import { NextRequest, NextResponse } from "next/server";
 
 /**
- * OAuth Callback Handler
+ * Authentication Callback Handler
  *
- * Handles OAuth callbacks from social authentication providers (Google, Apple).
+ * Handles authentication callbacks from:
+ * - OAuth providers (Google, Apple) - social login
+ * - Email confirmations - PKCE flow for email verification
+ *
  * Exchanges the authorization code for a session and redirects to the specified destination.
+ * If no redirect parameter is provided, defaults to /knowledge-base.
  */
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);

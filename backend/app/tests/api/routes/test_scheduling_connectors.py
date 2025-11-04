@@ -6,7 +6,7 @@ from fastapi.testclient import TestClient
 from sqlmodel import Session, select
 
 from app.core.config import settings
-from app.models import SchedulingConnector, User, Workspace
+from app.models import SchedulingConnector, User
 
 
 def test_create_connector(
@@ -62,6 +62,14 @@ def test_list_connectors(
     assert me.status_code == 200
     workspace_id = me.json()["id"]
 
+    # Get initial count to account for any existing connectors
+    initial_response = client.get(
+        f"{settings.API_V1_STR}/connectors/workspaces/{workspace_id}",
+        headers=normal_user_token_headers,
+    )
+    assert initial_response.status_code == 200
+    initial_count = len(initial_response.json())
+
     # Create connectors
     connector1 = SchedulingConnector(
         workspace_id=workspace_id,
@@ -85,7 +93,12 @@ def test_list_connectors(
     )
     assert response.status_code == 200
     content = response.json()
-    assert len(content) == 2
+    # Should have initial count plus the 2 we just created
+    assert len(content) == initial_count + 2
+    # Verify our new connectors are in the list
+    connector_types = {c["type"] for c in content}
+    assert "calendly" in connector_types
+    assert "square" in connector_types
 
 
 def test_activate_connector(
@@ -210,21 +223,17 @@ def test_delete_connector(
     user = db.exec(select(User).where(User.email == settings.EMAIL_TEST_USER)).first()
     assert user is not None
 
-    # Create workspace
-    workspace = Workspace(
-        owner_id=user.id,
-        handle="test-workspace",
-        name="Test Workspace",
-        type="individual",
-        tone="professional",
-        timezone="UTC",
+    # Use existing workspace (auto-created by /workspaces/me endpoint)
+    # This avoids unique constraint violations since each user can only have one workspace
+    me = client.get(
+        f"{settings.API_V1_STR}/workspaces/me", headers=normal_user_token_headers
     )
-    db.add(workspace)
-    db.commit()
+    assert me.status_code == 200
+    workspace_id = me.json()["id"]
 
     # Create connector
     connector = SchedulingConnector(
-        workspace_id=workspace.id,
+        workspace_id=workspace_id,
         type="calendly",
         config={"url": "https://calendly.com/testuser"},
         is_active=False,

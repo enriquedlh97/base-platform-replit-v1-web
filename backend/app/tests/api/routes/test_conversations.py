@@ -6,7 +6,7 @@ from fastapi.testclient import TestClient
 from sqlmodel import Session, select
 
 from app.core.config import settings
-from app.models import Conversation, ConversationMessage, User, Workspace
+from app.models import Conversation, ConversationMessage, User
 
 
 def test_create_conversation(
@@ -60,6 +60,14 @@ def test_list_conversations(
     assert me.status_code == 200
     workspace_id = me.json()["id"]
 
+    # Get initial count to account for any existing conversations
+    initial_response = client.get(
+        f"{settings.API_V1_STR}/conversations/workspaces/{workspace_id}",
+        headers=normal_user_token_headers,
+    )
+    assert initial_response.status_code == 200
+    initial_count = len(initial_response.json())
+
     # Create conversations
     conv1 = Conversation(
         workspace_id=workspace_id,
@@ -85,7 +93,12 @@ def test_list_conversations(
     )
     assert response.status_code == 200
     content = response.json()
-    assert len(content) == 2
+    # Should have initial count plus the 2 we just created
+    assert len(content) == initial_count + 2
+    # Verify our new conversations are in the list
+    conversation_names = {c["visitor_name"] for c in content}
+    assert "Alice" in conversation_names
+    assert "Bob" in conversation_names
 
 
 def test_get_conversation_by_id(
@@ -205,20 +218,16 @@ def test_list_messages_in_conversation(
     user = db.exec(select(User).where(User.email == settings.EMAIL_TEST_USER)).first()
     assert user is not None
 
-    # Create workspace and conversation
-    workspace = Workspace(
-        owner_id=user.id,
-        handle="test-workspace",
-        name="Test Workspace",
-        type="individual",
-        tone="professional",
-        timezone="UTC",
+    # Use existing workspace (auto-created by /workspaces/me endpoint)
+    # This avoids unique constraint violations since each user can only have one workspace
+    me = client.get(
+        f"{settings.API_V1_STR}/workspaces/me", headers=normal_user_token_headers
     )
-    db.add(workspace)
-    db.commit()
+    assert me.status_code == 200
+    workspace_id = me.json()["id"]
 
     conversation = Conversation(
-        workspace_id=workspace.id,
+        workspace_id=workspace_id,
         visitor_name="Test User",
         visitor_email="test@example.com",
         channel="web",

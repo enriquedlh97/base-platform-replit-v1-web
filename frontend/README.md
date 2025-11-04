@@ -57,22 +57,26 @@ Open [http://localhost:3000](http://localhost:3000) to see the application.
 
 ### Code Quality
 
+**Before committing, always run:**
+
 ```bash
-# Format all files
-npm run format
+# Run all quality checks (recommended)
+bash scripts/format.sh    # Format code
+bash scripts/lint.sh      # Lint and type-check
+bash scripts/test.sh      # Run tests
 
-# Check formatting
-npm run format:check
+# Or run individually:
+npm run format            # Format all files
+npm run format:check      # Check formatting
+npm run lint:fix          # Lint and auto-fix
+npm run lint:check        # Check linting
+npm run type-check        # Type check
 
-# Lint and auto-fix
-npm run lint:fix
-
-# Check linting
-npm run lint:check
-
-# Type check
-npm run type-check
+# Critical: Verify build before committing
+npm run build             # Must complete without errors
 ```
+
+**Pre-commit Hooks**: Husky automatically runs checks on commit. Install hooks with `npm install` (runs automatically via the "prepare" script).
 
 ### API Client Generation
 

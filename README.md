@@ -59,16 +59,29 @@ A scheduling-first platform where freelancers and consulting businesses can spin
 - npm (comes with Node.js)
 - Python 3.12+ and uv (for backend)
 - Docker and Docker Compose (for Supabase)
+- pre-commit (for code quality hooks): `pip install pre-commit` or `brew install pre-commit`
 
 ### Development Setup
 
-1. **Start Supabase** (database, auth, storage)
+**First-time setup:**
+
+1. **Install pre-commit hooks** (required):
    ```bash
-   cd supabase
-   nvm use && yarn start
+   # Install root-level hooks
+   pre-commit install
+
+   # Install frontend hooks (run after npm install)
+   cd frontend
+   npm install  # Automatically sets up Husky via "prepare" script
    ```
 
-2. **Start Backend** (in another terminal)
+2. **Start Supabase** (database, auth, storage)
+   ```bash
+   cd supabase
+   nvm use && npm start
+   ```
+
+3. **Start Backend** (in another terminal)
    ```bash
    cd backend
    uv sync                    # Install dependencies
@@ -77,15 +90,15 @@ A scheduling-first platform where freelancers and consulting businesses can spin
    fastapi run app/main.py --reload
    ```
 
-3. **Start Frontend** (in another terminal)
+4. **Start Frontend** (in another terminal)
    ```bash
    cd frontend
    nvm use                    # Ensure Node 20
-   npm install                # First time only
+   npm install                # First time only (also sets up Husky)
    npm run dev
    ```
 
-4. **Access the Application**
+5. **Access the Application**
    - Frontend: http://localhost:3000 (redirects to /knowledge-base after login)
    - Backend API: http://localhost:8000
    - API Docs: http://localhost:8000/api/v1/docs
@@ -95,7 +108,7 @@ A scheduling-first platform where freelancers and consulting businesses can spin
 
 **Note**: After signing up, you'll be redirected to the Knowledge Base page where you can immediately start adding business information. Workspaces are automatically created on first access.
 
-5. **Generate API Client** (when backend schema changes)
+6. **Generate API Client** (when backend schema changes)
    ```bash
    ./scripts/generate-api-client.sh
    ```
@@ -126,14 +139,88 @@ A scheduling-first platform where freelancers and consulting businesses can spin
 
 ## 🔄 Development Workflow
 
+### Initial Setup
+
+**1. Install Pre-commit Hooks** (required before first commit)
+
+This ensures all code quality checks run automatically on each commit:
+
+```bash
+# Install root-level pre-commit hooks (runs checks for both frontend and backend)
+pre-commit install
+
+# Install frontend Husky hooks (runs frontend-specific checks)
+cd frontend
+npm install  # This automatically runs the "prepare" script which sets up Husky
+```
+
+### Daily Development Workflow
+
+**Before committing code, always run these checks:**
+
+**1. Run Backend Scripts** (from `backend/` directory):
+```bash
+cd backend
+source .venv/bin/activate  # If not already activated
+
+# Format code
+bash scripts/format.sh
+
+# Lint code
+bash scripts/lint.sh
+
+# Run tests
+bash scripts/test.sh
+```
+
+**2. Run Frontend Scripts** (from `frontend/` directory):
+```bash
+cd frontend
+nvm use  # Ensure correct Node version
+
+# Format code
+bash scripts/format.sh
+
+# Lint and type-check
+bash scripts/lint.sh
+
+# Run tests (if available)
+bash scripts/test.sh
+```
+
+**3. Verify Frontend Build** (critical before committing):
+```bash
+cd frontend
+nvm use
+npm run build
+```
+
+**Fix any build errors before committing.** The build must complete successfully without errors.
+
+**4. Commit Your Changes**:
+```bash
+git add .
+git commit -m "your commit message"
+```
+
+The pre-commit hooks will automatically run:
+- Backend: Ruff linting and formatting
+- Frontend: ESLint, Prettier, and TypeScript type checking
+- Root: YAML/TOML validation, trailing whitespace checks
+
+If any checks fail, fix the issues and commit again.
+
+### Database Changes Workflow
+
 1. **Make Changes**: Modify models in `backend/app/models.py`
 2. **Create Migration**: `alembic revision --autogenerate -m "description"`
 3. **Apply Migration**: Run `bash scripts/prestart.sh` (which runs `alembic upgrade head`) or manually: `alembic upgrade head`
-4. **Run Tests**: `bash scripts/test.sh`
-5. **Generate API Client**: `./scripts/generate-api-client.sh`
-6. **Commit**: Changes are automatically reflected in development containers
+4. **Generate API Client**: `./scripts/generate-api-client.sh`
+5. **Run All Scripts** (as described above)
+6. **Verify Frontend Build**: `cd frontend && npm run build`
+7. **Commit**: Pre-commit hooks will run automatically
 
-**Note**: After resetting the database (e.g., `yarn reset` in supabase), always run `bash scripts/prestart.sh` to recreate tables and apply migrations.
+**Note**: After resetting the database (e.g., `npm run reset` in supabase), always run `bash scripts/prestart.sh` to recreate tables and apply migrations.
 
 ## 📋 Current Implementation Plan
 
@@ -165,25 +252,47 @@ A scheduling-first platform where freelancers and consulting businesses can spin
 
 ## 🛠️ Key Commands
 
+### Development Servers
+
 ```bash
 # Supabase (database, auth, storage)
-cd supabase && nvm use && yarn start
+cd supabase && nvm use && npm start
 
 # Backend API server (run prestart.sh first after DB reset)
 cd backend && source .venv/bin/activate && bash scripts/prestart.sh && fastapi run app/main.py --reload
 
 # Frontend dev server
 cd frontend && nvm use && npm run dev
+```
 
-# Frontend linting and formatting
-cd frontend && npm run lint
-cd frontend && npm run format
+### Code Quality Checks
 
-# Backend tests with coverage
-cd backend && bash scripts/test.sh
+```bash
+# Backend scripts (run all before committing)
+cd backend && source .venv/bin/activate
+bash scripts/format.sh    # Format Python code
+bash scripts/lint.sh      # Lint and type-check
+bash scripts/test.sh      # Run tests with coverage
 
+# Frontend scripts (run all before committing)
+cd frontend && nvm use
+bash scripts/format.sh    # Format code
+bash scripts/lint.sh      # Lint and type-check
+bash scripts/test.sh      # Run tests
+
+# Frontend build verification (critical before committing)
+cd frontend && nvm use && npm run build
+```
+
+### Utilities
+
+```bash
 # Generate API client (after backend schema changes)
 ./scripts/generate-api-client.sh
+
+# Install pre-commit hooks (first time setup)
+pre-commit install
+cd frontend && npm install  # Sets up Husky automatically
 ```
 
 ## 📚 Resources
@@ -198,11 +307,18 @@ cd backend && bash scripts/test.sh
 
 ## 🤝 Contributing
 
-1. Follow existing patterns in the codebase
-2. Write tests for new functionality
-3. Update documentation as needed
-4. Use conventional commits
-5. Ensure all tests pass before submitting
+1. **Follow existing patterns** in the codebase
+2. **Run all scripts before committing**:
+   - Backend: `bash scripts/format.sh`, `bash scripts/lint.sh`, `bash scripts/test.sh`
+   - Frontend: `bash scripts/format.sh`, `bash scripts/lint.sh`, `bash scripts/test.sh`
+   - **Frontend build must succeed**: `npm run build`
+3. **Install pre-commit hooks** (first time only):
+   - `pre-commit install` (root level)
+   - `cd frontend && npm install` (sets up Husky)
+4. **Write tests** for new functionality
+5. **Update documentation** as needed
+6. **Use conventional commits**
+7. **Ensure all pre-commit checks pass** before submitting
 
 ## 📊 Current Statistics
 
