@@ -16,14 +16,10 @@ export default function PublicChatPage() {
   const [messages, setMessages] = useState<
     Array<{ id: string; role: string; content: string; created_at: string }>
   >([]);
-  const [since, setSince] = useState<string | null>(null);
   const [input, setInput] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [streamText, setStreamText] = useState<string>("");
-  const pollRef = useRef<NodeJS.Timeout | null>(null);
   const streamRef = useRef<EventSource | null>(null);
-  const isStreamingRef = useRef<boolean>(false);
-  const seenMessageIdsRef = useRef<Set<string>>(new Set());
 
   // Create conversation once
   useEffect(() => {
@@ -41,45 +37,29 @@ export default function PublicChatPage() {
     };
   }, [workspaceHandle]);
 
-  // Poll messages (disabled while streaming)
+  // Load initial messages on mount (no polling needed - each conversation is isolated)
   useEffect(() => {
     if (!conversationId) return;
-    const poll = async () => {
-      if (isStreamingRef.current) return; // pause polling during SSE
+    (async () => {
       try {
         const resp = await PublicChatApi.listMessages(conversationId, {
-          since: since ?? undefined,
           limit: 50,
         });
         if (resp.messages.length > 0) {
-          setMessages((prev) => {
-            const next = [...prev];
-            for (const m of resp.messages) {
-              if (!seenMessageIdsRef.current.has(m.id)) {
-                next.push({
-                  id: m.id,
-                  role: m.role,
-                  content: m.content,
-                  created_at: m.created_at,
-                });
-                seenMessageIdsRef.current.add(m.id);
-              }
-            }
-            return next;
-          });
-          if (resp.next_since) setSince(resp.next_since);
+          setMessages(
+            resp.messages.map((m) => ({
+              id: m.id,
+              role: m.role,
+              content: m.content,
+              created_at: m.created_at,
+            }))
+          );
         }
       } catch {
         // swallow for MVP
       }
-    };
-    // initial fetch
-    poll();
-    pollRef.current = setInterval(poll, 2500);
-    return () => {
-      if (pollRef.current) clearInterval(pollRef.current);
-    };
-  }, [conversationId, since]);
+    })();
+  }, [conversationId]);
 
   const sorted = useMemo(() => {
     return [...messages].sort((a, b) =>
@@ -91,24 +71,44 @@ export default function PublicChatPage() {
     if (!conversationId || !input.trim() || isSending) return;
     setIsSending(true);
     try {
-      // Optimistically append the user message
-      const nowIso = new Date().toISOString();
+      // Optimistically append the user message for immediate UI feedback
+      const userContent = input.trim();
+      const optimisticId = `local-user-${Date.now()}`;
       const optimisticUser = {
-        id: `local-user-${Date.now()}`,
+        id: optimisticId,
         role: "user",
-        content: input.trim(),
-        created_at: nowIso,
+        content: userContent,
+        created_at: new Date().toISOString(),
       };
+
       setMessages((prev) => {
         const next = [...prev, optimisticUser];
         return next;
       });
-      seenMessageIdsRef.current.add(optimisticUser.id);
 
-      await PublicChatApi.postMessage(conversationId, {
+      // Post message and get the real message back with its real ID
+      const realMessage = await PublicChatApi.postMessage(conversationId, {
         role: "user",
-        content: input.trim(),
+        content: userContent,
       });
+
+      // Replace optimistic message with real one immediately
+      setMessages((prev) => {
+        const next = [...prev];
+        const optimisticIndex = next.findIndex(
+          (msg) => msg.id === optimisticId
+        );
+        if (optimisticIndex !== -1) {
+          next[optimisticIndex] = {
+            id: realMessage.id,
+            role: realMessage.role,
+            content: realMessage.content,
+            created_at: realMessage.created_at,
+          };
+        }
+        return next;
+      });
+
       setInput("");
       // Start SSE stream for assistant reply
       try {
@@ -126,7 +126,6 @@ export default function PublicChatPage() {
         const es = new EventSource(url, { withCredentials: false });
         streamRef.current = es;
         setStreamText("");
-        isStreamingRef.current = true;
 
         es.addEventListener("delta", (ev) => {
           try {
@@ -138,46 +137,38 @@ export default function PublicChatPage() {
             // ignore parse errors
           }
         });
-        es.addEventListener("message_end", (ev) => {
+        es.addEventListener("message_end", async () => {
           try {
-            const data = JSON.parse((ev as MessageEvent).data) as {
-              full_text: string;
-            };
-            // Clear streaming text and trigger polling refresh
-            const text = data.full_text || "";
-            setStreamText("");
-            // Optimistically append assistant final message so UI doesn't flicker blank
-            if (text) {
-              const optimisticAssistant = {
-                id: `local-assistant-${Date.now()}`,
-                role: "assistant",
-                content: text,
-                created_at: new Date().toISOString(),
-              };
-              setMessages((prev) => [...prev, optimisticAssistant]);
+            if (conversationId) {
+              const resp = await PublicChatApi.listMessages(conversationId, {
+                limit: 50,
+              });
+              setMessages(
+                resp.messages.map((m) => ({
+                  id: m.id,
+                  role: m.role,
+                  content: m.content,
+                  created_at: m.created_at,
+                }))
+              );
             }
-            // trigger one immediate poll after stream ends
-            isStreamingRef.current = false;
-            // do not reset since; next poll will fetch only new items
+            setStreamText("");
           } catch {
             setStreamText("");
-            isStreamingRef.current = false;
           }
           es.close();
           streamRef.current = null;
         });
         es.addEventListener("error", () => {
-          // On error, close and fallback to polling
+          // On error, close stream
           if (streamRef.current) {
             streamRef.current.close();
             streamRef.current = null;
           }
           setStreamText("");
-          isStreamingRef.current = false;
         });
       } catch {
-        // Fallback to polling
-        isStreamingRef.current = false;
+        // Stream setup failed, but continue
       }
     } catch {
       // noop MVP
