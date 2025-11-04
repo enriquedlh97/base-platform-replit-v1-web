@@ -32,12 +32,16 @@ repos:
         language: system
         files: ^frontend/.*\.(js|jsx|ts|tsx|json|yaml|yml|md|sh)$
         pass_filenames: false
+        always_run: false
+        stages: [commit]
       - id: frontend-format
         name: Frontend Format
         entry: bash frontend/scripts/format.sh
         language: system
         files: ^frontend/.*\.(js|jsx|ts|tsx|json|yaml|yml|md|sh)$
         pass_filenames: false
+        always_run: false
+        stages: [commit]
 
 ci:
   autofix_commit_msg: 🎨 [pre-commit.ci] Auto format from pre-commit.com hooks

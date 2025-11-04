@@ -4,6 +4,7 @@
 # (e.g., `owner: "User" | None = Relationship(...)`) to avoid circular import errors.
 from datetime import datetime, timezone
 from decimal import Decimal
+from typing import Any
 from uuid import UUID, uuid4
 
 from pydantic import BaseModel, EmailStr
@@ -22,6 +23,17 @@ class UserBase(SQLModel):
     name: str | None = None
     about: str | None = None
     avatar_url: str | None = None
+    # Business profile fields
+    business_name: str | None = Field(default=None, max_length=255)
+    tagline: str | None = Field(default=None, max_length=500)
+    bio: str | None = None
+    phone: str | None = Field(default=None, max_length=50)
+    website: str | None = Field(default=None, max_length=500)
+    social_links: dict[str, str] | None = Field(default=None, sa_column=Column(JSON))
+    setup_completed: bool = Field(default=False)
+    # Setup wizard fields
+    profile_type: str | None = Field(default=None, max_length=50)
+    faqs: str | None = None
 
 
 # Properties to receive via API on creation
@@ -41,6 +53,17 @@ class UserUpdateMe(SQLModel):
     name: str | None = None
     about: str | None = None
     avatar_url: str | None = None
+    # Business profile fields
+    business_name: str | None = Field(default=None, max_length=255)
+    tagline: str | None = Field(default=None, max_length=500)
+    bio: str | None = None
+    phone: str | None = Field(default=None, max_length=50)
+    website: str | None = Field(default=None, max_length=500)
+    social_links: dict[str, str] | None = Field(default=None, sa_column=Column(JSON))
+    setup_completed: bool | None = None
+    # Setup wizard fields
+    profile_type: str | None = Field(default=None, max_length=50)
+    faqs: str | None = None
 
 
 # Database model, database table inferred from class name
@@ -51,6 +74,9 @@ class User(UserBase, table=True):
     # issues with SQLModel.
     id: UUID = Field(primary_key=True)
     items: list["Item"] = Relationship(back_populates="owner", cascade_delete=True)
+    workspaces: list["Workspace"] = Relationship(
+        back_populates="owner", cascade_delete=True
+    )
 
 
 # Properties to return via API, id is always required
@@ -453,3 +479,254 @@ class ProjectPublic(SQLModel):
     project_type: str | None = None
     created_at: datetime
     updated_at: datetime
+
+
+# Workspace Models
+class WorkspaceBase(SQLModel):
+    handle: str = Field(
+        unique=True, index=True, max_length=100, description="URL-friendly identifier"
+    )
+    name: str = Field(max_length=255)
+    type: str = Field(max_length=50)
+    tone: str = Field(max_length=50)
+    timezone: str = Field(max_length=100)
+    is_active: bool = Field(default=True)
+    knowledge_base: str | None = None
+
+
+class WorkspaceCreate(SQLModel):
+    handle: str = Field(
+        min_length=1, max_length=100, regex=r"^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    )
+    name: str = Field(min_length=1, max_length=255)
+    type: str = Field(min_length=1, max_length=50)
+    tone: str = Field(min_length=1, max_length=50)
+    timezone: str = Field(min_length=1, max_length=100)
+
+
+class WorkspaceUpdate(SQLModel):
+    handle: str | None = Field(
+        default=None, max_length=100, regex=r"^[a-z0-9]+(?:-[a-z0-9]+)*$"
+    )
+    name: str | None = Field(default=None, max_length=255)
+    type: str | None = Field(default=None, max_length=50)
+    tone: str | None = Field(default=None, max_length=50)
+    timezone: str | None = Field(default=None, max_length=100)
+    is_active: bool | None = None
+    knowledge_base: str | None = None
+
+
+class Workspace(WorkspaceBase, table=True):
+    __tablename__ = "workspaces"
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+    owner_id: UUID = Field(
+        foreign_key="user.id", unique=True, index=True, ondelete="CASCADE"
+    )
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+    # Relationships
+    owner: "User" = Relationship(back_populates="workspaces")
+    services: list["WorkspaceService"] = Relationship(
+        back_populates="workspace", cascade_delete=True
+    )
+    connectors: list["SchedulingConnector"] = Relationship(
+        back_populates="workspace", cascade_delete=True
+    )
+    conversations: list["Conversation"] = Relationship(
+        back_populates="workspace", cascade_delete=True
+    )
+
+
+class WorkspacePublic(SQLModel):
+    id: UUID
+    owner_id: UUID
+    handle: str
+    name: str
+    type: str
+    tone: str
+    timezone: str
+    is_active: bool
+    knowledge_base: str | None = None
+    created_at: datetime
+    updated_at: datetime
+
+
+class WorkspaceServiceBase(SQLModel):
+    name: str = Field(max_length=255)
+    description: str | None = Field(default=None, max_length=1000)
+    format: str | None = Field(default=None, max_length=100)
+    duration_minutes: int | None = None
+    starting_price: Decimal | None = None
+    is_active: bool = Field(default=True)
+    sort_order: int = Field(default=0)
+
+
+class WorkspaceServiceCreate(SQLModel):
+    name: str = Field(min_length=1, max_length=255)
+    description: str | None = Field(default=None, max_length=1000)
+    format: str | None = Field(default=None, max_length=100)
+    duration_minutes: int | None = None
+    starting_price: float | None = None
+    is_active: bool = Field(default=True)
+    sort_order: int = Field(default=0)
+
+
+class WorkspaceServiceUpdate(SQLModel):
+    name: str | None = Field(default=None, max_length=255)
+    description: str | None = Field(default=None, max_length=1000)
+    format: str | None = Field(default=None, max_length=100)
+    duration_minutes: int | None = None
+    starting_price: float | None = None
+    is_active: bool | None = None
+    sort_order: int | None = None
+
+
+class WorkspaceService(WorkspaceServiceBase, table=True):
+    __tablename__ = "workspace_services"
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+    workspace_id: UUID = Field(foreign_key="workspaces.id", ondelete="CASCADE")
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+    # Relationships
+    workspace: "Workspace" = Relationship(back_populates="services")
+
+
+class WorkspaceServicePublic(SQLModel):
+    id: UUID
+    workspace_id: UUID
+    name: str
+    description: str | None = None
+    format: str | None = None
+    duration_minutes: int | None = None
+    starting_price: Decimal | None = None
+    is_active: bool
+    sort_order: int
+    created_at: datetime
+    updated_at: datetime
+
+
+class SchedulingConnectorBase(SQLModel):
+    type: str = Field(max_length=50)
+    config: dict[str, Any] | None = Field(default=None, sa_column=Column(JSON))
+    is_active: bool = Field(default=False)
+
+
+class SchedulingConnectorCreate(SQLModel):
+    type: str = Field(min_length=1, max_length=50)
+    config: dict[str, Any] | None = None
+    is_active: bool = Field(default=False)
+
+
+class SchedulingConnectorUpdate(SQLModel):
+    type: str | None = Field(default=None, max_length=50)
+    config: dict[str, Any] | None = None
+    is_active: bool | None = None
+
+
+class SchedulingConnector(SchedulingConnectorBase, table=True):
+    __tablename__ = "scheduling_connectors"
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+    workspace_id: UUID = Field(foreign_key="workspaces.id", ondelete="CASCADE")
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+    # Relationships
+    workspace: "Workspace" = Relationship(back_populates="connectors")
+
+
+class SchedulingConnectorPublic(SQLModel):
+    id: UUID
+    workspace_id: UUID
+    type: str
+    config: dict[str, Any] | None = None
+    is_active: bool
+    created_at: datetime
+    updated_at: datetime
+
+
+class ConversationBase(SQLModel):
+    visitor_name: str | None = Field(default=None, max_length=255)
+    visitor_email: str | None = Field(default=None, max_length=255)
+    channel: str = Field(max_length=50)
+    status: str = Field(max_length=50)
+    human_time_saved_minutes: int | None = None
+    tags: list[str] | None = Field(default=None, sa_column=Column(ARRAY(String)))
+
+
+class ConversationCreate(SQLModel):
+    visitor_name: str | None = Field(default=None, max_length=255)
+    visitor_email: str | None = Field(default=None, max_length=255)
+    channel: str = Field(min_length=1, max_length=50)
+    status: str = Field(default="active", max_length=50)
+    tags: list[str] | None = None
+
+
+class ConversationUpdate(SQLModel):
+    visitor_name: str | None = Field(default=None, max_length=255)
+    visitor_email: str | None = Field(default=None, max_length=255)
+    channel: str | None = Field(default=None, max_length=50)
+    status: str | None = Field(default=None, max_length=50)
+    human_time_saved_minutes: int | None = None
+    tags: list[str] | None = None
+
+
+class Conversation(ConversationBase, table=True):
+    __tablename__ = "conversations"
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+    workspace_id: UUID = Field(foreign_key="workspaces.id", ondelete="CASCADE")
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+    # Relationships
+    workspace: "Workspace" = Relationship(back_populates="conversations")
+    messages: list["ConversationMessage"] = Relationship(
+        back_populates="conversation", cascade_delete=True
+    )
+
+
+class ConversationPublic(SQLModel):
+    id: UUID
+    workspace_id: UUID
+    visitor_name: str | None = None
+    visitor_email: str | None = None
+    channel: str
+    status: str
+    human_time_saved_minutes: int | None = None
+    tags: list[str] | None = None
+    created_at: datetime
+    updated_at: datetime
+
+
+class ConversationMessageBase(SQLModel):
+    content: str
+    role: str = Field(max_length=50)
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+
+class ConversationMessageCreate(SQLModel):
+    content: str = Field(min_length=1)
+    role: str = Field(min_length=1, max_length=50)
+    timestamp: datetime | None = None
+
+
+class ConversationMessage(ConversationMessageBase, table=True):
+    __tablename__ = "conversation_messages"
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+    conversation_id: UUID = Field(foreign_key="conversations.id", ondelete="CASCADE")
+    # Optional idempotency key to de-duplicate client retries
+    idempotency_key: str | None = Field(default=None, max_length=128)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+    # Relationships
+    conversation: "Conversation" = Relationship(back_populates="messages")
+
+
+class ConversationMessagePublic(SQLModel):
+    id: UUID
+    conversation_id: UUID
+    content: str
+    role: str
+    timestamp: datetime
+    created_at: datetime

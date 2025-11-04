@@ -19,4 +19,4 @@ cd frontend
 [ -s "$HOME/.nvm/nvm.sh" ] && source "$HOME/.nvm/nvm.sh"
 nvm use && yarn run generate:api
 
-echo "✅ API client generated successfully in frontend/packages/app/utils/api-client"
+echo "✅ API client generated successfully in frontend/lib/api/generated"

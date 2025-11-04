@@ -32,12 +32,14 @@ def get_token_from_credentials(
 ) -> str:
     """Extract the token string from HTTPAuthorizationCredentials."""
     if credentials is None:
+        logger.warning("Missing authorization credentials")
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Missing authorization credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
-    return credentials.credentials
+    token = credentials.credentials
+    return token
 
 
 SessionDep = Annotated[Session, Depends(get_db)]
@@ -76,13 +78,14 @@ def get_current_user_from_supabase(session: SessionDep, token: TokenDep) -> User
         token_data = TokenPayload(**payload)
         user_id = UUID(token_data.sub)
     except (InvalidTokenError, ValidationError, ValueError) as e:
-        logger.info("JWT validation error: %s", e)
+        logger.warning("JWT validation error: %s (type: %s)", e, type(e).__name__)
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Could not validate credentials",
         )
     user: User | None = session.get(User, user_id)
     if not user:
+        logger.warning("User not found in database for user_id: %s", user_id)
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="User not found in database",

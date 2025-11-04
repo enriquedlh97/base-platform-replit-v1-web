@@ -44,7 +44,7 @@ class Settings(BaseSettings):
     SUPABASE_SERVICE_ROLE_KEY: str
     # 60 minutes * 24 hours * 8 days = 8 days
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24 * 8
-    FRONTEND_HOST: str = "http://localhost:5173"  # TODO: This is the old frontend, after migration, change to new frontend url
+    FRONTEND_HOST: str = "http://localhost:3000"  # Can be overridden via .env
     ENVIRONMENT: Literal["local", "staging", "production"] = "local"
 
     BACKEND_CORS_ORIGINS: Annotated[
@@ -103,6 +103,11 @@ class Settings(BaseSettings):
     EMAIL_TEST_USER: EmailStr = "test@example.com"
     FIRST_SUPERUSER: EmailStr
     FIRST_SUPERUSER_PASSWORD: str
+
+    # AI/Agent settings
+    GROQ_API_KEY: str | None = None
+    TEXT_MODEL_NAME: str = "llama-3.3-70b-versatile"
+    MODEL_TEMPERATURE: float = 0.7
 
     def _check_default_secret(self, var_name: str, value: str | None) -> None:
         if value == "changethis":
