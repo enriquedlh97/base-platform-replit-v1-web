@@ -6,3 +6,8 @@ playwright-report/
 blob-report/
 playwright/.cache/
 .env
+
+# Frontend build artifacts
+frontend/next-env.d.ts
+frontend/tsconfig.tsbuildinfo
+frontend/.next/
