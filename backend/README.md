@@ -96,7 +96,7 @@ The backend follows a clean architecture pattern with clear separation of concer
 ### 1. Start Supabase Services
 ```bash
 cd supabase
-nvm use && yarn start
+nvm use && npm start
 ```
 
 ### 2. Start Backend (in separate terminal)
@@ -502,7 +502,7 @@ uv run python scripts/seed_db.py
 ```bash
 cd supabase
 nvm use
-yarn start
+npm start
 ```
 
 Check the output shows:

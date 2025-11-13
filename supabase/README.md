@@ -35,7 +35,7 @@ This directory contains the **Supabase services configuration** for the Base Pla
 ```bash
 # From the project root
 cd supabase
-nvm use && yarn start
+nvm use && npm start
 ```
 
 **Services Started:**
@@ -111,7 +111,7 @@ GOOGLE_SECRET=your-secret
 ### **Email Testing (Local)**
 When developing locally, emails are captured by InBucket:
 
-1. Start Supabase: `cd supabase && nvm use && yarn start`
+1. Start Supabase: `cd supabase && nvm use && npm start`
 2. Navigate to: http://localhost:54324
 3. Check email confirmations and password resets
 
@@ -143,7 +143,7 @@ alembic upgrade head
 - Ensure JWT secret is at least 32 characters
 
 #### **Database Connection Issues**
-- Verify Supabase is running: `cd supabase && nvm use && yarn start`
+- Verify Supabase is running: `cd supabase && nvm use && npm start`
 - Check port 5432 is available
 - Review backend database configuration
 
@@ -155,16 +155,16 @@ alembic upgrade head
 ### **Useful Commands**
 ```bash
 # Start Supabase services (use correct Node version)
-cd supabase && nvm use && yarn start
+cd supabase && nvm use && npm start
 
 # Stop Supabase services
-cd supabase && yarn stop
+cd supabase && npm run stop
 
 # Reset local database
-cd supabase && yarn reset
+cd supabase && npm run reset
 
 # Check status
-cd supabase && yarn status
+cd supabase && npm run status
 ```
 
 ## Integration with Base Platform
