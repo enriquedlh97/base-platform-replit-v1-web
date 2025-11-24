@@ -4,6 +4,7 @@ import * as React from "react";
 import {
   IconCamera,
   IconChartBar,
+  IconClock,
   IconDashboard,
   IconDatabase,
   IconFileAi,
@@ -136,6 +137,11 @@ const navigationData = {
       name: "Knowledge Base",
       url: "/knowledge-base",
       icon: IconDatabase,
+    },
+    {
+      name: "Tasks",
+      url: "/tasks",
+      icon: IconClock,
     },
     {
       name: "Reports",

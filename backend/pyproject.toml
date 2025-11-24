@@ -25,6 +25,7 @@ dependencies = [
     # Agent dependencies
     "langgraph==0.2.60",
     "langchain-groq==0.1.6",
+    "websockets>=13.1.0,<14.0.0",
 ]
 
 [tool.uv]
