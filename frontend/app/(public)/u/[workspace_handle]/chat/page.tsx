@@ -19,6 +19,12 @@ export default function PublicChatPage() {
   const [input, setInput] = useState("");
   const [isSending, setIsSending] = useState(false);
   const [streamText, setStreamText] = useState<string>("");
+  const [toolStatus, setToolStatus] = useState<{
+    tool: string;
+    status: "calling" | "executing" | "completed" | "error";
+    message?: string;
+  } | null>(null);
+  const [hasReceivedText, setHasReceivedText] = useState(false);
   const streamRef = useRef<EventSource | null>(null);
 
   // Create conversation once
@@ -126,6 +132,8 @@ export default function PublicChatPage() {
         const es = new EventSource(url, { withCredentials: false });
         streamRef.current = es;
         setStreamText("");
+        setHasReceivedText(false);
+        setToolStatus(null); // Clear tool status when starting a new message
 
         es.addEventListener("delta", (ev) => {
           try {
@@ -133,6 +141,103 @@ export default function PublicChatPage() {
               text_chunk: string;
             };
             setStreamText((prev) => prev + (data.text_chunk || ""));
+            // Mark that we've received text - this allows tool status to appear after text
+            if (data.text_chunk) {
+              setHasReceivedText(true);
+            }
+            // Don't clear tool status - keep it visible to show completion
+            // The tool status will be updated to "completed" when tool_result arrives
+          } catch {
+            // ignore parse errors
+          }
+        });
+
+        es.addEventListener("tool_call", (ev) => {
+          try {
+            const data = JSON.parse((ev as MessageEvent).data) as {
+              id: string;
+              tool: string;
+              args: Record<string, unknown>;
+            };
+            // Only show tool status after we've received some text (pre-message)
+            // This ensures the pre-message appears before the tool status
+            // Use a small delay to ensure text is rendered first
+            const showToolStatus = () => {
+              if (data.tool === "schedule_appointment_with_cua") {
+                setToolStatus({
+                  tool: data.tool,
+                  status: "calling",
+                  message: "I'm scheduling your appointment...",
+                });
+              } else {
+                setToolStatus({
+                  tool: data.tool,
+                  status: "calling",
+                  message: `Using ${data.tool}...`,
+                });
+              }
+            };
+
+            // If we've already received text, show immediately
+            // Otherwise, wait a bit for text to render first
+            if (hasReceivedText) {
+              showToolStatus();
+            } else {
+              // Wait a short time for text to start rendering
+              setTimeout(showToolStatus, 100);
+            }
+          } catch {
+            // ignore parse errors
+          }
+        });
+
+        es.addEventListener("tool_result", (ev) => {
+          try {
+            const data = JSON.parse((ev as MessageEvent).data) as {
+              id: string;
+              status: string;
+              data: string | null;
+              error: string | null;
+            };
+            // Check if the tool result indicates success or failure
+            // The status field tells us, and we can also check the data/error
+            const isSuccess = data.status === "success" && !data.error;
+
+            if (isSuccess) {
+              // Update status to completed (green indicator) but keep it visible
+              setToolStatus((prev) => {
+                if (prev) {
+                  return {
+                    ...prev,
+                    status: "completed",
+                    message: "Appointment scheduled successfully!",
+                  };
+                }
+                return {
+                  tool: "schedule_appointment_with_cua",
+                  status: "completed",
+                  message: "Appointment scheduled successfully!",
+                };
+              });
+              // Don't clear - keep it visible so user knows it completed
+            } else {
+              // Failed - show red indicator with user-friendly message
+              // Don't show technical error details, just a simple failure message
+              setToolStatus((prev) => {
+                if (prev) {
+                  return {
+                    ...prev,
+                    status: "error",
+                    message: "Failed to schedule appointment",
+                  };
+                }
+                return {
+                  tool: "schedule_appointment_with_cua",
+                  status: "error",
+                  message: "Failed to schedule appointment",
+                };
+              });
+            }
           } catch {
             // ignore parse errors
           }
@@ -143,16 +248,16 @@ export default function PublicChatPage() {
               const resp = await PublicChatApi.listMessages(conversationId, {
                 limit: 50,
               });
-              setMessages(
-                resp.messages.map((m) => ({
-                  id: m.id,
-                  role: m.role,
-                  content: m.content,
-                  created_at: m.created_at,
-                }))
-              );
+              const updatedMessages = resp.messages.map((m) => ({
+                id: m.id,
+                role: m.role,
+                content: m.content,
+                created_at: m.created_at,
+              }));
+              setMessages(updatedMessages);
             }
             setStreamText("");
+            // Keep tool status visible - it will be cleared when a new message starts
           } catch {
             setStreamText("");
           }
@@ -166,6 +271,7 @@ export default function PublicChatPage() {
             streamRef.current = null;
           }
           setStreamText("");
+          // Don't clear tool status on error - keep it visible to show what happened
         });
       } catch {
         // Stream setup failed, but continue
@@ -193,10 +299,34 @@ export default function PublicChatPage() {
               Say hi to start the conversation.
             </div>
           )}
+          {/* Show streaming text while message is being generated */}
           {streamText && (
             <div className="flex flex-col">
               <span className="text-xs text-muted-foreground">assistant</span>
               <span>{streamText}</span>
+            </div>
+          )}
+          {/* Show badge at the bottom - simple temporary UI element */}
+          {toolStatus && (
+            <div className="flex flex-col gap-1">
+              <span className="text-xs text-muted-foreground">assistant</span>
+              <div className="flex items-center gap-2 rounded-lg bg-muted p-2">
+                {toolStatus.status === "calling" && (
+                  <div className="h-2 w-2 animate-pulse rounded-full bg-blue-500" />
+                )}
+                {toolStatus.status === "executing" && (
+                  <div className="h-2 w-2 animate-spin rounded-full border-2 border-blue-500 border-t-transparent" />
+                )}
+                {toolStatus.status === "completed" && (
+                  <div className="h-2 w-2 rounded-full bg-green-500" />
+                )}
+                {toolStatus.status === "error" && (
+                  <div className="h-2 w-2 rounded-full bg-red-500" />
+                )}
+                <span className="text-sm text-muted-foreground">
+                  {toolStatus.message}
+                </span>
+              </div>
             </div>
           )}
         </div>

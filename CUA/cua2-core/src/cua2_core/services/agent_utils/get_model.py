@@ -1,0 +1,13 @@
+from smolagents import InferenceClientModel, Model
+
+# Available model IDs
+AVAILABLE_MODELS = [
+    "Qwen/Qwen3-VL-8B-Instruct",
+    "Qwen/Qwen3-VL-30B-A3B-Instruct",
+    "Qwen/Qwen3-VL-235B-A22B-Instruct",
+]
+
+
+def get_model(model_id: str) -> Model:
+    """Get the model"""
+    return InferenceClientModel(model_id=model_id)

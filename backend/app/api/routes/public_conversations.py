@@ -23,6 +23,7 @@ from app.models import (
     ConversationCreate,
     ConversationMessage,
     ConversationMessagePublic,
+    SchedulingConnector,
     Workspace,
 )
 
@@ -220,6 +221,19 @@ async def stream_public_conversation(
     if not workspace or not workspace.is_active:
         raise HTTPException(status_code=404, detail="Workspace not found")
 
+    # Get Calendly connector URL if available
+    calendly_url: str | None = None
+    connector_statement: SelectOfScalar[SchedulingConnector] = select(
+        SchedulingConnector
+    ).where(
+        SchedulingConnector.workspace_id == workspace.id,
+        SchedulingConnector.type == "calendly",
+        SchedulingConnector.is_active == True,  # noqa: E712
+    )
+    calendly_connector = session.exec(connector_statement).first()
+    if calendly_connector and calendly_connector.config:
+        calendly_url = calendly_connector.config.get("link")  # type: ignore
+
     # Load conversation history ordered by created_at
     history_query = (
         select(ConversationMessage)
@@ -248,11 +262,32 @@ async def stream_public_conversation(
                 conversation_history=[
                     {"role": m.role, "content": m.content} for m in history_rows
                 ],
+                calendly_url=calendly_url,
                 request_id=request_id,
             ):
                 if evt["type"] == "delta":
                     full_text_chunks.append(evt["text_chunk"])
                     yield encode_sse_event("delta", {"text_chunk": evt["text_chunk"]})
+                elif evt["type"] == "message_end":
+                    # Handle intermediate message_end (e.g., after pre-message, before tool)
+                    # Save the current accumulated text as a separate message
+                    if full_text_chunks:
+                        pre_message_text = "".join(full_text_chunks)
+                        timestamp = datetime.now(timezone.utc)
+                        db_message = ConversationMessage(
+                            conversation_id=conversation_id,
+                            role="assistant",
+                            content=pre_message_text,
+                            timestamp=timestamp,
+                        )
+                        session.add(db_message)
+                        session.commit()
+                        # Clear chunks for the next message
+                        full_text_chunks = []
+                        # Start a new message
+                        yield encode_sse_event(
+                            "message_start", {"message_id": str(conversation_id)}
+                        )
                 elif evt["type"] == "tool_call":
                     yield encode_sse_event(
                         "tool_call",

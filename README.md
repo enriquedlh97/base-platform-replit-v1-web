@@ -98,11 +98,22 @@ A scheduling-first platform where freelancers and consulting businesses can spin
    npm run dev
    ```
 
-5. **Access the Application**
+5. **Start CUA (Computer Use Agent)** - Required for appointment scheduling (in another terminal)
+   ```bash
+   cd CUA
+   export HF_TOKEN=your_huggingface_token
+   export E2B_API_KEY=your_e2b_api_key
+   make docker-build  # Build Docker image
+   make docker-run    # Run CUA service
+   ```
+   CUA will be available at http://localhost:7860
+
+6. **Access the Application**
    - Frontend: http://localhost:3000 (redirects to /knowledge-base after login)
    - Backend API: http://localhost:8000
    - API Docs: http://localhost:8000/api/v1/docs
    - Supabase Studio: http://localhost:54323
+   - CUA Service: http://localhost:7860
 
    After login, navigate to Knowledge Base and add your Calendly link at the top, then click Save.
 
@@ -120,19 +131,34 @@ A scheduling-first platform where freelancers and consulting businesses can spin
 │   ├── app/
 │   │   ├── api/         # API routes and dependencies
 │   │   ├── core/        # Configuration and services
+│   │   ├── agent/       # AI agent system (LangChain)
+│   │   │   ├── graph/   # Agent graph and streaming
+│   │   │   ├── tools/   # LangChain tools (scheduling)
+│   │   │   └── modules/ # Agent modules
+│   │   ├── services/    # Business logic services
+│   │   │   ├── cua_client.py      # CUA WebSocket client
+│   │   │   └── cua_scheduling_tool.py  # Scheduling integration
 │   │   ├── models.py    # SQLModel database models
 │   │   └── tests/       # Comprehensive test suite
 │   └── scripts/         # Development utilities
 ├── frontend/            # Next.js 16 application
 │   ├── app/            # App Router pages and layouts
 │   │   ├── (auth)/     # Authentication pages (login, signup)
-│   │   └── (dashboard)/ # Protected dashboard pages
+│   │   ├── (dashboard)/ # Protected dashboard pages
+│   │   │   └── tasks/  # CUA task visualization page
+│   │   └── (public)/   # Public pages
+│   │       └── u/[workspace_handle]/chat/  # Public chat interface
 │   ├── components/     # UI components (shadcn/ui)
 │   ├── lib/           # Utilities and integrations
 │   │   ├── api/       # Generated API client
 │   │   ├── auth/      # Authentication hooks and actions
 │   │   └── supabase/  # Supabase clients (browser & server)
 │   └── scripts/       # Development utilities
+├── CUA/                # Computer Use Agent (browser automation)
+│   ├── cua2-core/     # Backend (FastAPI + WebSocket)
+│   ├── cua2-front/    # Frontend (React + TypeScript)
+│   ├── Makefile       # Docker build/run commands
+│   └── README.md      # CUA setup and integration guide
 ├── supabase/          # Database and auth services
 └── scripts/           # Project utilities
 ```
@@ -241,12 +267,19 @@ If any checks fail, fix the issues and commit again.
   - Unlimited text input for business information
   - Auto-creation of workspaces on first access
   - Streamlined onboarding (no setup wizard required)
+- **Phase 3: AI-Powered Appointment Scheduling** 🎉
+  - Integration with CUA (Computer Use Agent) for browser automation
+  - LangChain-based chat agent with tool calling
+  - Real-time appointment scheduling via Calendly
+  - Streaming chat interface with SSE (Server-Sent Events)
+  - Visual progress indicators for scheduling tasks
+  - Agent final answer extraction and error handling
+  - Public chat interface at `/u/{workspace_handle}/chat`
+  - Tasks dashboard page with CUA visualization iframe
 
-### 🔄 Upcoming Phases (Phase 3+)
+### 🔄 Upcoming Phases (Phase 4+)
 - **Services Management**: CRUD for workspace services
 - **Scheduling Connectors**: Full connectors management UI and provider-specific flows (Calendly MVP link input already available in Knowledge Base)
-- **Public Chat Streaming + Agent**: Upgrade to streaming (SSE) and LLM-powered agent responses
-- **Agent System**: AI-powered conversation handling
 - **Conversation History**: View and manage past interactions
 - **Testing**: Jest + React Testing Library setup
 
@@ -263,6 +296,15 @@ cd backend && source .venv/bin/activate && bash scripts/prestart.sh && fastapi r
 
 # Frontend dev server
 cd frontend && nvm use && npm run dev
+
+# CUA (Computer Use Agent) - Required for appointment scheduling
+cd CUA
+export HF_TOKEN=your_huggingface_token
+export E2B_API_KEY=your_e2b_api_key
+make docker-build  # Build Docker image (first time or after changes)
+make docker-run    # Run CUA service
+# View logs: make docker-logs
+# Stop: make docker-stop
 ```
 
 ### Code Quality Checks
@@ -299,11 +341,13 @@ cd frontend && npm install  # Sets up Husky automatically
 
 - [Frontend README](frontend/README.md) - Frontend architecture and development guide
 - [Backend README](backend/README.md) - Backend API documentation
+- [CUA README](CUA/README.md) - Computer Use Agent setup and integration guide
 - Public chat URL shape: `/u/{workspace_handle}/chat`
 - [Supabase README](supabase/README.md) - Database and auth setup
 - [API Documentation](http://localhost:8000/api/v1/docs) - Auto-generated OpenAPI docs
 - [Frontend App](http://localhost:3000) - Next.js application
 - [Supabase Studio](http://localhost:54323) - Database management UI
+- [CUA Service](http://localhost:7860) - Computer Use Agent interface
 
 ## 🤝 Contributing
 
