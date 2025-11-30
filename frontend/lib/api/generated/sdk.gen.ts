@@ -2,7 +2,7 @@
 
 import { type Client, formDataBodySerializer, type Options as Options2, type TDataShape, urlSearchParamsBodySerializer } from './client';
 import { client } from './client.gen';
-import type { AppointmentsCreateAppointmentData, AppointmentsCreateAppointmentErrors, AppointmentsCreateAppointmentResponses, AppointmentsDeleteAppointmentData, AppointmentsDeleteAppointmentErrors, AppointmentsDeleteAppointmentResponses, AppointmentsGetAllAppointmentsData, AppointmentsGetAllAppointmentsResponses, AppointmentsGetAppointmentData, AppointmentsGetAppointmentErrors, AppointmentsGetAppointmentResponses, AppointmentsUpdateAppointmentData, AppointmentsUpdateAppointmentErrors, AppointmentsUpdateAppointmentResponses, CategoriesReadCategoriesData, CategoriesReadCategoriesResponses, ClientsCreateClientData, ClientsCreateClientErrors, ClientsCreateClientResponses, ClientsDeleteClientData, ClientsDeleteClientErrors, ClientsDeleteClientResponses, ClientsGetAllClientsData, ClientsGetAllClientsResponses, ClientsGetClientData, ClientsGetClientErrors, ClientsGetClientResponses, ClientsUpdateClientData, ClientsUpdateClientErrors, ClientsUpdateClientResponses, ConversationsCreateConversationData, ConversationsCreateConversationErrors, ConversationsCreateConversationMessageData, ConversationsCreateConversationMessageErrors, ConversationsCreateConversationMessageResponses, ConversationsCreateConversationResponses, ConversationsDeleteConversationData, ConversationsDeleteConversationErrors, ConversationsDeleteConversationResponses, ConversationsGetConversationData, ConversationsGetConversationErrors, ConversationsGetConversationMessagesData, ConversationsGetConversationMessagesErrors, ConversationsGetConversationMessagesResponses, ConversationsGetConversationResponses, ConversationsGetWorkspaceConversationsData, ConversationsGetWorkspaceConversationsErrors, ConversationsGetWorkspaceConversationsResponses, ConversationsUpdateConversationData, ConversationsUpdateConversationErrors, ConversationsUpdateConversationResponses, EventsCreateEventData, EventsCreateEventErrors, EventsCreateEventResponses, EventsReadEventsData, EventsReadEventsResponses, ItemsCreateItemData, ItemsCreateItemErrors, ItemsCreateItemResponses, ItemsDeleteItemData, ItemsDeleteItemErrors, ItemsDeleteItemResponses, ItemsReadItemData, ItemsReadItemErrors, ItemsReadItemResponses, ItemsReadItemsData, ItemsReadItemsErrors, ItemsReadItemsResponses, ItemsUpdateItemData, ItemsUpdateItemErrors, ItemsUpdateItemResponses, LoginTestTokenData, LoginTestTokenResponses, MessagesCreateMessageData, MessagesCreateMessageErrors, MessagesCreateMessageResponses, MessagesDeleteMessageData, MessagesDeleteMessageErrors, MessagesDeleteMessageResponses, MessagesGetConversationMessagesData, MessagesGetConversationMessagesErrors, MessagesGetConversationMessagesResponses, MessagesGetMessageData, MessagesGetMessageErrors, MessagesGetMessageResponses, PostsCreatePostData, PostsCreatePostErrors, PostsCreatePostResponses, PostsReadPostsData, PostsReadPostsResponses, PrivateCreateUserData, PrivateCreateUserErrors, PrivateCreateUserResponses, ProjectsCreateProjectData, ProjectsCreateProjectErrors, ProjectsCreateProjectResponses, ProvidersCreateProviderEndpointData, ProvidersCreateProviderEndpointErrors, ProvidersCreateProviderEndpointResponses, ProvidersDeleteProviderEndpointData, ProvidersDeleteProviderEndpointErrors, ProvidersDeleteProviderEndpointResponses, ProvidersReadProviderData, ProvidersReadProviderErrors, ProvidersReadProviderResponses, ProvidersReadProvidersData, ProvidersReadProvidersResponses, ProvidersUpdateProviderData, ProvidersUpdateProviderErrors, ProvidersUpdateProviderResponses, SchedulingConnectorsActivateConnectorData, SchedulingConnectorsActivateConnectorErrors, SchedulingConnectorsActivateConnectorResponses, SchedulingConnectorsCreateConnectorData, SchedulingConnectorsCreateConnectorErrors, SchedulingConnectorsCreateConnectorResponses, SchedulingConnectorsDeactivateConnectorData, SchedulingConnectorsDeactivateConnectorErrors, SchedulingConnectorsDeactivateConnectorResponses, SchedulingConnectorsDeleteConnectorData, SchedulingConnectorsDeleteConnectorErrors, SchedulingConnectorsDeleteConnectorResponses, SchedulingConnectorsGetConnectorData, SchedulingConnectorsGetConnectorErrors, SchedulingConnectorsGetConnectorResponses, SchedulingConnectorsGetWorkspaceConnectorsData, SchedulingConnectorsGetWorkspaceConnectorsErrors, SchedulingConnectorsGetWorkspaceConnectorsResponses, SchedulingConnectorsUpdateConnectorData, SchedulingConnectorsUpdateConnectorErrors, SchedulingConnectorsUpdateConnectorResponses, ServicesCreateServiceEndpointData, ServicesCreateServiceEndpointErrors, ServicesCreateServiceEndpointResponses, ServicesDeleteServiceEndpointData, ServicesDeleteServiceEndpointErrors, ServicesDeleteServiceEndpointResponses, ServicesReadServiceData, ServicesReadServiceErrors, ServicesReadServiceResponses, ServicesReadServicesData, ServicesReadServicesResponses, ServicesUpdateServiceData, ServicesUpdateServiceErrors, ServicesUpdateServiceResponses, UsersCreateUserData, UsersCreateUserErrors, UsersCreateUserResponses, UsersDeleteUserData, UsersDeleteUserErrors, UsersDeleteUserMeData, UsersDeleteUserMeResponses, UsersDeleteUserResponses, UsersReadUserByIdData, UsersReadUserByIdErrors, UsersReadUserByIdResponses, UsersReadUserMeData, UsersReadUserMeResponses, UsersReadUsersData, UsersReadUsersErrors, UsersReadUsersResponses, UsersUpdateUserData, UsersUpdateUserErrors, UsersUpdateUserMeData, UsersUpdateUserMeErrors, UsersUpdateUserMeResponses, UsersUpdateUserResponses, UsersUploadAvatarMeData, UsersUploadAvatarMeErrors, UsersUploadAvatarMeResponses, UtilsHealthCheckData, UtilsHealthCheckResponses, UtilsTestEmailData, UtilsTestEmailErrors, UtilsTestEmailResponses, WorkspacesCreateWorkspaceData, WorkspacesCreateWorkspaceErrors, WorkspacesCreateWorkspaceResponses, WorkspacesDeleteWorkspaceData, WorkspacesDeleteWorkspaceErrors, WorkspacesDeleteWorkspaceResponses, WorkspaceServicesCreateWorkspaceServiceData, WorkspaceServicesCreateWorkspaceServiceErrors, WorkspaceServicesCreateWorkspaceServiceResponses, WorkspaceServicesDeleteServiceData, WorkspaceServicesDeleteServiceErrors, WorkspaceServicesDeleteServiceResponses, WorkspaceServicesGetServiceData, WorkspaceServicesGetServiceErrors, WorkspaceServicesGetServiceResponses, WorkspaceServicesGetWorkspaceServicesData, WorkspaceServicesGetWorkspaceServicesErrors, WorkspaceServicesGetWorkspaceServicesResponses, WorkspaceServicesUpdateServiceData, WorkspaceServicesUpdateServiceErrors, WorkspaceServicesUpdateServiceResponses, WorkspacesGetMyWorkspaceData, WorkspacesGetMyWorkspaceResponses, WorkspacesGetWorkspaceData, WorkspacesGetWorkspaceErrors, WorkspacesGetWorkspaceResponses, WorkspacesUpdateWorkspaceData, WorkspacesUpdateWorkspaceErrors, WorkspacesUpdateWorkspaceResponses } from './types.gen';
+import type { AppointmentsCreateAppointmentData, AppointmentsCreateAppointmentErrors, AppointmentsCreateAppointmentResponses, AppointmentsDeleteAppointmentData, AppointmentsDeleteAppointmentErrors, AppointmentsDeleteAppointmentResponses, AppointmentsGetAllAppointmentsData, AppointmentsGetAllAppointmentsResponses, AppointmentsGetAppointmentData, AppointmentsGetAppointmentErrors, AppointmentsGetAppointmentResponses, AppointmentsUpdateAppointmentData, AppointmentsUpdateAppointmentErrors, AppointmentsUpdateAppointmentResponses, CategoriesReadCategoriesData, CategoriesReadCategoriesResponses, ClientsCreateClientData, ClientsCreateClientErrors, ClientsCreateClientResponses, ClientsDeleteClientData, ClientsDeleteClientErrors, ClientsDeleteClientResponses, ClientsGetAllClientsData, ClientsGetAllClientsResponses, ClientsGetClientData, ClientsGetClientErrors, ClientsGetClientResponses, ClientsUpdateClientData, ClientsUpdateClientErrors, ClientsUpdateClientResponses, ConversationsCreateConversationData, ConversationsCreateConversationErrors, ConversationsCreateConversationMessageData, ConversationsCreateConversationMessageErrors, ConversationsCreateConversationMessageResponses, ConversationsCreateConversationResponses, ConversationsDeleteConversationData, ConversationsDeleteConversationErrors, ConversationsDeleteConversationResponses, ConversationsGetConversationData, ConversationsGetConversationErrors, ConversationsGetConversationMessagesData, ConversationsGetConversationMessagesErrors, ConversationsGetConversationMessagesResponses, ConversationsGetConversationResponses, ConversationsGetWorkspaceConversationsData, ConversationsGetWorkspaceConversationsErrors, ConversationsGetWorkspaceConversationsResponses, ConversationsUpdateConversationData, ConversationsUpdateConversationErrors, ConversationsUpdateConversationResponses, EventsCreateEventData, EventsCreateEventErrors, EventsCreateEventResponses, EventsReadEventsData, EventsReadEventsResponses, ItemsCreateItemData, ItemsCreateItemErrors, ItemsCreateItemResponses, ItemsDeleteItemData, ItemsDeleteItemErrors, ItemsDeleteItemResponses, ItemsReadItemData, ItemsReadItemErrors, ItemsReadItemResponses, ItemsReadItemsData, ItemsReadItemsErrors, ItemsReadItemsResponses, ItemsUpdateItemData, ItemsUpdateItemErrors, ItemsUpdateItemResponses, LoginTestTokenData, LoginTestTokenResponses, MessagesCreateMessageData, MessagesCreateMessageErrors, MessagesCreateMessageResponses, MessagesDeleteMessageData, MessagesDeleteMessageErrors, MessagesDeleteMessageResponses, MessagesGetConversationMessagesData, MessagesGetConversationMessagesErrors, MessagesGetConversationMessagesResponses, MessagesGetMessageData, MessagesGetMessageErrors, MessagesGetMessageResponses, PostsCreatePostData, PostsCreatePostErrors, PostsCreatePostResponses, PostsReadPostsData, PostsReadPostsResponses, PrivateCreateUserData, PrivateCreateUserErrors, PrivateCreateUserResponses, ProjectsCreateProjectData, ProjectsCreateProjectErrors, ProjectsCreateProjectResponses, ProvidersCreateProviderEndpointData, ProvidersCreateProviderEndpointErrors, ProvidersCreateProviderEndpointResponses, ProvidersDeleteProviderEndpointData, ProvidersDeleteProviderEndpointErrors, ProvidersDeleteProviderEndpointResponses, ProvidersReadProviderData, ProvidersReadProviderErrors, ProvidersReadProviderResponses, ProvidersReadProvidersData, ProvidersReadProvidersResponses, ProvidersUpdateProviderData, ProvidersUpdateProviderErrors, ProvidersUpdateProviderResponses, PublicCreatePublicConversationData, PublicCreatePublicConversationErrors, PublicCreatePublicConversationResponses, PublicGetWorkspaceProfileData, PublicGetWorkspaceProfileErrors, PublicGetWorkspaceProfileResponses, PublicListPublicMessagesData, PublicListPublicMessagesErrors, PublicListPublicMessagesResponses, PublicPostPublicMessageData, PublicPostPublicMessageErrors, PublicPostPublicMessageResponses, PublicStreamPublicConversationData, PublicStreamPublicConversationErrors, PublicStreamPublicConversationResponses, SchedulingConnectorsActivateConnectorData, SchedulingConnectorsActivateConnectorErrors, SchedulingConnectorsActivateConnectorResponses, SchedulingConnectorsCreateConnectorData, SchedulingConnectorsCreateConnectorErrors, SchedulingConnectorsCreateConnectorResponses, SchedulingConnectorsDeactivateConnectorData, SchedulingConnectorsDeactivateConnectorErrors, SchedulingConnectorsDeactivateConnectorResponses, SchedulingConnectorsDeleteConnectorData, SchedulingConnectorsDeleteConnectorErrors, SchedulingConnectorsDeleteConnectorResponses, SchedulingConnectorsGetConnectorData, SchedulingConnectorsGetConnectorErrors, SchedulingConnectorsGetConnectorResponses, SchedulingConnectorsGetWorkspaceConnectorsData, SchedulingConnectorsGetWorkspaceConnectorsErrors, SchedulingConnectorsGetWorkspaceConnectorsResponses, SchedulingConnectorsUpdateConnectorData, SchedulingConnectorsUpdateConnectorErrors, SchedulingConnectorsUpdateConnectorResponses, ServicesCreateServiceEndpointData, ServicesCreateServiceEndpointErrors, ServicesCreateServiceEndpointResponses, ServicesDeleteServiceEndpointData, ServicesDeleteServiceEndpointErrors, ServicesDeleteServiceEndpointResponses, ServicesReadServiceData, ServicesReadServiceErrors, ServicesReadServiceResponses, ServicesReadServicesData, ServicesReadServicesResponses, ServicesUpdateServiceData, ServicesUpdateServiceErrors, ServicesUpdateServiceResponses, UsersCreateUserData, UsersCreateUserErrors, UsersCreateUserResponses, UsersDeleteUserData, UsersDeleteUserErrors, UsersDeleteUserMeData, UsersDeleteUserMeResponses, UsersDeleteUserResponses, UsersReadUserByIdData, UsersReadUserByIdErrors, UsersReadUserByIdResponses, UsersReadUserMeData, UsersReadUserMeResponses, UsersReadUsersData, UsersReadUsersErrors, UsersReadUsersResponses, UsersUpdateUserData, UsersUpdateUserErrors, UsersUpdateUserMeData, UsersUpdateUserMeErrors, UsersUpdateUserMeResponses, UsersUpdateUserResponses, UsersUploadAvatarMeData, UsersUploadAvatarMeErrors, UsersUploadAvatarMeResponses, UtilsHealthCheckData, UtilsHealthCheckResponses, UtilsTestEmailData, UtilsTestEmailErrors, UtilsTestEmailResponses, WorkspacesCreateWorkspaceData, WorkspacesCreateWorkspaceErrors, WorkspacesCreateWorkspaceResponses, WorkspacesDeleteWorkspaceData, WorkspacesDeleteWorkspaceErrors, WorkspacesDeleteWorkspaceResponses, WorkspaceServicesCreateWorkspaceServiceData, WorkspaceServicesCreateWorkspaceServiceErrors, WorkspaceServicesCreateWorkspaceServiceResponses, WorkspaceServicesDeleteServiceData, WorkspaceServicesDeleteServiceErrors, WorkspaceServicesDeleteServiceResponses, WorkspaceServicesGetServiceData, WorkspaceServicesGetServiceErrors, WorkspaceServicesGetServiceResponses, WorkspaceServicesGetWorkspaceServicesData, WorkspaceServicesGetWorkspaceServicesErrors, WorkspaceServicesGetWorkspaceServicesResponses, WorkspaceServicesUpdateServiceData, WorkspaceServicesUpdateServiceErrors, WorkspaceServicesUpdateServiceResponses, WorkspacesGetMyWorkspaceData, WorkspacesGetMyWorkspaceResponses, WorkspacesGetWorkspaceData, WorkspacesGetWorkspaceErrors, WorkspacesGetWorkspaceResponses, WorkspacesUpdateWorkspaceData, WorkspacesUpdateWorkspaceErrors, WorkspacesUpdateWorkspaceResponses, WorkspacesUploadWorkspaceProfileImageData, WorkspacesUploadWorkspaceProfileImageErrors, WorkspacesUploadWorkspaceProfileImageResponses } from './types.gen';
 
 export type Options<TData extends TDataShape = TDataShape, ThrowOnError extends boolean = boolean> = Options2<TData, ThrowOnError> & {
     /**
@@ -857,7 +857,9 @@ export class WorkspacesService {
     /**
      * Get My Workspace
      *
-     * Get current user's workspace.
+     * Get current user's workspace. Auto-creates one if it doesn't exist.
+     * This ensures users can immediately access features like the knowledge base
+     * without requiring a setup wizard.
      */
     public static getMyWorkspace<ThrowOnError extends boolean = false>(options?: Options<WorkspacesGetMyWorkspaceData, ThrowOnError>) {
         return (options?.client ?? client).get<WorkspacesGetMyWorkspaceResponses, unknown, ThrowOnError>({
@@ -925,6 +927,35 @@ export class WorkspacesService {
             ...options,
             headers: {
                 'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+
+    /**
+     * Upload Workspace Profile Image
+     *
+     * Upload profile image for a workspace.
+     *
+     * The image will be uploaded to Supabase Storage in the 'workspace-profiles' bucket
+     * and the workspace's profile_image_url will be updated in the database.
+     *
+     * Expected: multipart/form-data with 'profile_image' field containing the image file.
+     * Max size: 5MB. Allowed types: image/jpeg, image/png, image/webp.
+     */
+    public static uploadWorkspaceProfileImage<ThrowOnError extends boolean = false>(options: Options<WorkspacesUploadWorkspaceProfileImageData, ThrowOnError>) {
+        return (options.client ?? client).post<WorkspacesUploadWorkspaceProfileImageResponses, WorkspacesUploadWorkspaceProfileImageErrors, ThrowOnError>({
+            ...formDataBodySerializer,
+            security: [
+                {
+                    scheme: 'bearer',
+                    type: 'http'
+                }
+            ],
+            url: '/api/v1/workspaces/{workspace_id}/profile-image',
+            ...options,
+            headers: {
+                'Content-Type': null,
                 ...options.headers
             }
         });
@@ -1380,6 +1411,86 @@ export class MessagesService {
                 }
             ],
             url: '/api/v1/messages/{message_id}',
+            ...options
+        });
+    }
+}
+
+export class PublicService {
+    /**
+     * Get Workspace Profile
+     *
+     * Get public workspace profile by handle.
+     *
+     * Returns public profile information (name, subtitle, description, profile image)
+     * for display on the public chat page. No authentication required.
+     */
+    public static getWorkspaceProfile<ThrowOnError extends boolean = false>(options: Options<PublicGetWorkspaceProfileData, ThrowOnError>) {
+        return (options.client ?? client).get<PublicGetWorkspaceProfileResponses, PublicGetWorkspaceProfileErrors, ThrowOnError>({
+            url: '/api/v1/public/workspaces/{workspace_handle}',
+            ...options
+        });
+    }
+
+    /**
+     * Create Public Conversation
+     *
+     * Create a new anonymous conversation for a workspace handle.
+     *
+     * For MVP, we do not enforce idempotency at DB level; callers may reuse
+     * the same conversation or de-duplicate client-side if needed.
+     */
+    public static createPublicConversation<ThrowOnError extends boolean = false>(options: Options<PublicCreatePublicConversationData, ThrowOnError>) {
+        return (options.client ?? client).post<PublicCreatePublicConversationResponses, PublicCreatePublicConversationErrors, ThrowOnError>({
+            url: '/api/v1/public/conversations',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+
+    /**
+     * List Public Messages
+     */
+    public static listPublicMessages<ThrowOnError extends boolean = false>(options: Options<PublicListPublicMessagesData, ThrowOnError>) {
+        return (options.client ?? client).get<PublicListPublicMessagesResponses, PublicListPublicMessagesErrors, ThrowOnError>({
+            url: '/api/v1/public/conversations/{conversation_id}/messages',
+            ...options
+        });
+    }
+
+    /**
+     * Post Public Message
+     *
+     * Post a user message to a conversation.
+     *
+     * If idempotency_key is provided and the combination already exists, return the
+     * existing message. For Phase 1, we only check an optional column match.
+     */
+    public static postPublicMessage<ThrowOnError extends boolean = false>(options: Options<PublicPostPublicMessageData, ThrowOnError>) {
+        return (options.client ?? client).post<PublicPostPublicMessageResponses, PublicPostPublicMessageErrors, ThrowOnError>({
+            url: '/api/v1/public/conversations/{conversation_id}/messages',
+            ...options,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers
+            }
+        });
+    }
+
+    /**
+     * Stream Public Conversation
+     *
+     * Server-Sent Events (SSE) stream for assistant reply.
+     *
+     * For MVP, we start a single agent run that streams tokens (delta events)
+     * and emits a final message_end with the full text, which we persist.
+     */
+    public static streamPublicConversation<ThrowOnError extends boolean = false>(options: Options<PublicStreamPublicConversationData, ThrowOnError>) {
+        return (options.client ?? client).get<PublicStreamPublicConversationResponses, PublicStreamPublicConversationErrors, ThrowOnError>({
+            url: '/api/v1/public/conversations/{conversation_id}/stream',
             ...options
         });
     }

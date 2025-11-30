@@ -492,6 +492,10 @@ class WorkspaceBase(SQLModel):
     timezone: str = Field(max_length=100)
     is_active: bool = Field(default=True)
     knowledge_base: str | None = None
+    public_name: str | None = Field(default=None, max_length=255)
+    subtitle: str | None = Field(default=None, max_length=255)
+    description: str | None = None
+    profile_image_url: str | None = None
 
 
 class WorkspaceCreate(SQLModel):
@@ -514,6 +518,10 @@ class WorkspaceUpdate(SQLModel):
     timezone: str | None = Field(default=None, max_length=100)
     is_active: bool | None = None
     knowledge_base: str | None = None
+    public_name: str | None = Field(default=None, max_length=255)
+    subtitle: str | None = Field(default=None, max_length=255)
+    description: str | None = None
+    profile_image_url: str | None = None
 
 
 class Workspace(WorkspaceBase, table=True):
@@ -548,6 +556,10 @@ class WorkspacePublic(SQLModel):
     timezone: str
     is_active: bool
     knowledge_base: str | None = None
+    public_name: str | None = None
+    subtitle: str | None = None
+    description: str | None = None
+    profile_image_url: str | None = None
     created_at: datetime
     updated_at: datetime
 

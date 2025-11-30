@@ -1438,7 +1438,7 @@
       "get": {
         "tags": ["workspaces"],
         "summary": "Get My Workspace",
-        "description": "Get current user's workspace.",
+        "description": "Get current user's workspace. Auto-creates one if it doesn't exist.\nThis ensures users can immediately access features like the knowledge base\nwithout requiring a setup wizard.",
         "operationId": "workspaces-get_my_workspace",
         "responses": {
           "200": {
@@ -1560,6 +1560,55 @@
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/Message" }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/workspaces/{workspace_id}/profile-image": {
+      "post": {
+        "tags": ["workspaces"],
+        "summary": "Upload Workspace Profile Image",
+        "description": "Upload profile image for a workspace.\n\nThe image will be uploaded to Supabase Storage in the 'workspace-profiles' bucket\nand the workspace's profile_image_url will be updated in the database.\n\nExpected: multipart/form-data with 'profile_image' field containing the image file.\nMax size: 5MB. Allowed types: image/jpeg, image/png, image/webp.",
+        "operationId": "workspaces-upload_workspace_profile_image",
+        "security": [{ "SupabaseBearer": [] }],
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Workspace Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_workspaces-upload_workspace_profile_image"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/WorkspacePublic" }
               }
             }
           },
@@ -2575,6 +2624,240 @@
         }
       }
     },
+    "/api/v1/public/workspaces/{workspace_handle}": {
+      "get": {
+        "tags": ["public"],
+        "summary": "Get Workspace Profile",
+        "description": "Get public workspace profile by handle.\n\nReturns public profile information (name, subtitle, description, profile image)\nfor display on the public chat page. No authentication required.",
+        "operationId": "public-get_workspace_profile",
+        "parameters": [
+          {
+            "name": "workspace_handle",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "title": "Workspace Handle" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceProfilePublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/conversations": {
+      "post": {
+        "tags": ["public"],
+        "summary": "Create Public Conversation",
+        "description": "Create a new anonymous conversation for a workspace handle.\n\nFor MVP, we do not enforce idempotency at DB level; callers may reuse\nthe same conversation or de-duplicate client-side if needed.",
+        "operationId": "public-create_public_conversation",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePublicConversationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatePublicConversationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/conversations/{conversation_id}/messages": {
+      "post": {
+        "tags": ["public"],
+        "summary": "Post Public Message",
+        "description": "Post a user message to a conversation.\n\nIf idempotency_key is provided and the combination already exists, return the\nexisting message. For Phase 1, we only check an optional column match.",
+        "operationId": "public-post_public_message",
+        "parameters": [
+          {
+            "name": "conversation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Conversation Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PostPublicMessageRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationMessagePublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["public"],
+        "summary": "List Public Messages",
+        "operationId": "public-list_public_messages",
+        "parameters": [
+          {
+            "name": "conversation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Conversation Id"
+            }
+          },
+          {
+            "name": "_since",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "type": "string", "format": "date-time" },
+                { "type": "null" }
+              ],
+              "title": " Since"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 50, "title": "Limit" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListMessagesResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/conversations/{conversation_id}/stream": {
+      "get": {
+        "tags": ["public"],
+        "summary": "Stream Public Conversation",
+        "description": "Server-Sent Events (SSE) stream for assistant reply.\n\nFor MVP, we start a single agent run that streams tokens (delta events)\nand emits a final message_end with the full text, which we persist.",
+        "operationId": "public-stream_public_conversation",
+        "parameters": [
+          {
+            "name": "conversation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Conversation Id"
+            }
+          },
+          {
+            "name": "_since",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "type": "string", "format": "date-time" },
+                { "type": "null" }
+              ],
+              "title": " Since"
+            }
+          },
+          {
+            "name": "request_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Request Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/private/users/": {
       "post": {
         "tags": ["private"],
@@ -2840,6 +3123,18 @@
         "type": "object",
         "required": ["avatar"],
         "title": "Body_users-upload_avatar_me"
+      },
+      "Body_workspaces-upload_workspace_profile_image": {
+        "properties": {
+          "profile_image": {
+            "type": "string",
+            "format": "binary",
+            "title": "Profile Image"
+          }
+        },
+        "type": "object",
+        "required": ["profile_image"],
+        "title": "Body_workspaces-upload_workspace_profile_image"
       },
       "CategoryPublic": {
         "properties": {
@@ -3143,6 +3438,43 @@
         "type": "object",
         "title": "ConversationUpdate"
       },
+      "CreatePublicConversationRequest": {
+        "properties": {
+          "workspace_handle": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Workspace Handle"
+          },
+          "idempotency_key": {
+            "anyOf": [
+              { "type": "string", "maxLength": 128 },
+              { "type": "null" }
+            ],
+            "title": "Idempotency Key"
+          }
+        },
+        "type": "object",
+        "required": ["workspace_handle"],
+        "title": "CreatePublicConversationRequest"
+      },
+      "CreatePublicConversationResponse": {
+        "properties": {
+          "conversation_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Conversation Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": ["conversation_id", "created_at"],
+        "title": "CreatePublicConversationResponse"
+      },
       "EventCreate": {
         "properties": {
           "name": {
@@ -3316,6 +3648,27 @@
         "required": ["data", "count"],
         "title": "ItemsPublic"
       },
+      "ListMessagesResponse": {
+        "properties": {
+          "messages": {
+            "items": {
+              "$ref": "#/components/schemas/ConversationMessagePublic"
+            },
+            "type": "array",
+            "title": "Messages"
+          },
+          "next_since": {
+            "anyOf": [
+              { "type": "string", "format": "date-time" },
+              { "type": "null" }
+            ],
+            "title": "Next Since"
+          }
+        },
+        "type": "object",
+        "required": ["messages", "next_since"],
+        "title": "ListMessagesResponse"
+      },
       "Message": {
         "properties": { "message": { "type": "string", "title": "Message" } },
         "type": "object",
@@ -3366,6 +3719,27 @@
         "type": "object",
         "required": ["id", "user_id", "title", "created_at", "updated_at"],
         "title": "PostPublic"
+      },
+      "PostPublicMessageRequest": {
+        "properties": {
+          "role": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 1,
+            "title": "Role"
+          },
+          "content": { "type": "string", "minLength": 1, "title": "Content" },
+          "idempotency_key": {
+            "anyOf": [
+              { "type": "string", "maxLength": 128 },
+              { "type": "null" }
+            ],
+            "title": "Idempotency Key"
+          }
+        },
+        "type": "object",
+        "required": ["role", "content"],
+        "title": "PostPublicMessageRequest"
       },
       "PrivateUserCreate": {
         "properties": {
@@ -4190,6 +4564,37 @@
         "required": ["handle", "name", "type", "tone", "timezone"],
         "title": "WorkspaceCreate"
       },
+      "WorkspaceProfilePublic": {
+        "properties": {
+          "handle": { "type": "string", "title": "Handle" },
+          "public_name": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Public Name"
+          },
+          "subtitle": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Subtitle"
+          },
+          "description": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Description"
+          },
+          "profile_image_url": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Profile Image Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "handle",
+          "public_name",
+          "subtitle",
+          "description",
+          "profile_image_url"
+        ],
+        "title": "WorkspaceProfilePublic",
+        "description": "Public workspace profile information for display on public chat page."
+      },
       "WorkspacePublic": {
         "properties": {
           "id": { "type": "string", "format": "uuid", "title": "Id" },
@@ -4207,6 +4612,22 @@
           "knowledge_base": {
             "anyOf": [{ "type": "string" }, { "type": "null" }],
             "title": "Knowledge Base"
+          },
+          "public_name": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Public Name"
+          },
+          "subtitle": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Subtitle"
+          },
+          "description": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Description"
+          },
+          "profile_image_url": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Profile Image Url"
           },
           "created_at": {
             "type": "string",
@@ -4416,6 +4837,28 @@
           "knowledge_base": {
             "anyOf": [{ "type": "string" }, { "type": "null" }],
             "title": "Knowledge Base"
+          },
+          "public_name": {
+            "anyOf": [
+              { "type": "string", "maxLength": 255 },
+              { "type": "null" }
+            ],
+            "title": "Public Name"
+          },
+          "subtitle": {
+            "anyOf": [
+              { "type": "string", "maxLength": 255 },
+              { "type": "null" }
+            ],
+            "title": "Subtitle"
+          },
+          "description": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Description"
+          },
+          "profile_image_url": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Profile Image Url"
           }
         },
         "type": "object",

@@ -3,10 +3,10 @@
 import logging
 import re
 from datetime import datetime, timezone
-from typing import Any
+from typing import Annotated, Any
 from uuid import UUID
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, File, HTTPException, UploadFile
 from sqlmodel import select
 from sqlmodel.sql._expression_select_cls import SelectOfScalar
 
@@ -21,6 +21,7 @@ from app.models import (
     WorkspaceService,
     WorkspaceUpdate,
 )
+from app.services.file_upload import FileUploadService
 
 logger = logging.getLogger(__name__)
 
@@ -124,6 +125,7 @@ def get_my_workspace(*, session: SessionDep, current_user: CurrentUser) -> Any:
             timezone="UTC",
             is_active=True,
             knowledge_base=None,
+            public_name=current_user.full_name or current_user.name,
             created_at=datetime.now(timezone.utc),
             updated_at=datetime.now(timezone.utc),
         )
@@ -209,3 +211,58 @@ def delete_workspace(
     session.delete(workspace)
     session.commit()
     return Message(message="Workspace deleted successfully")
+
+
+@router.post("/{workspace_id}/profile-image", response_model=WorkspacePublic)
+async def upload_workspace_profile_image(
+    workspace_id: UUID,
+    session: SessionDep,
+    current_user: CurrentUser,
+    profile_image: Annotated[UploadFile, File()],
+) -> Any:
+    """
+    Upload profile image for a workspace.
+
+    The image will be uploaded to Supabase Storage in the 'workspace-profiles' bucket
+    and the workspace's profile_image_url will be updated in the database.
+
+    Expected: multipart/form-data with 'profile_image' field containing the image file.
+    Max size: 5MB. Allowed types: image/jpeg, image/png, image/webp.
+    """
+    workspace = get_workspace_or_404(workspace_id, session, current_user)
+
+    # Log upload attempt
+    logger.info(
+        "Workspace profile image upload attempt: workspace=%s filename=%s content_type=%s size=%s",
+        workspace_id,
+        profile_image.filename,
+        profile_image.content_type,
+        profile_image.size if hasattr(profile_image, "size") else "unknown",
+    )
+
+    try:
+        profile_image_url: str = await FileUploadService.upload_image_for_workspace(
+            file=profile_image,
+            workspace_id=workspace_id,
+            bucket_name="avatars",
+        )
+
+        # Update the workspace's profile_image_url in the database
+        workspace.profile_image_url = profile_image_url
+        workspace.updated_at = datetime.now(timezone.utc)
+        session.add(workspace)
+        session.commit()
+        session.refresh(workspace)
+
+        return workspace
+
+    except HTTPException:
+        # Re-raise HTTPExceptions (validation errors, upload failures)
+        raise
+    except Exception as e:
+        # Handle unexpected errors
+        logger.exception("Failed to process workspace profile image upload")
+        raise HTTPException(
+            status_code=500,
+            detail=f"Failed to process profile image upload: {str(e)}",
+        )

@@ -5,7 +5,11 @@ import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card } from "@/components/ui/card";
-import { PublicChatApi } from "@/lib/api/public/client";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import {
+  PublicChatApi,
+  type WorkspaceProfilePublic,
+} from "@/lib/api/public/client";
 import { env } from "@/lib/env";
 
 export default function PublicChatPage() {
@@ -25,10 +29,38 @@ export default function PublicChatPage() {
     message?: string;
   } | null>(null);
   const [hasReceivedText, setHasReceivedText] = useState(false);
+  const [workspaceProfile, setWorkspaceProfile] =
+    useState<WorkspaceProfilePublic | null>(null);
+  const [profileLoading, setProfileLoading] = useState(true);
   const streamRef = useRef<EventSource | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const messagesContainerRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Fetch workspace profile
+  useEffect(() => {
+    let mounted = true;
+    (async () => {
+      if (!workspaceHandle) return;
+      try {
+        setProfileLoading(true);
+        const profile =
+          await PublicChatApi.getWorkspaceProfile(workspaceHandle);
+        if (!mounted) return;
+        setWorkspaceProfile(profile);
+      } catch (error) {
+        console.error("Failed to load workspace profile:", error);
+        // Continue without profile - will use fallback
+      } finally {
+        if (mounted) {
+          setProfileLoading(false);
+        }
+      }
+    })();
+    return () => {
+      mounted = false;
+    };
+  }, [workspaceHandle]);
 
   // Create conversation once
   useEffect(() => {
@@ -313,12 +345,68 @@ export default function PublicChatPage() {
     }
   };
 
+  // Get display name - use profile public_name, fallback to handle
+  const displayName = workspaceProfile?.public_name || workspaceHandle;
+  const displayNameCapitalized = displayName
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
+
   return (
-    <div className="flex h-screen flex-col overflow-hidden">
+    <div className="flex h-screen flex-col overflow-hidden bg-background">
       <div className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-4 overflow-hidden p-4">
-        <h1 className="flex-shrink-0 text-xl font-semibold">
-          Chat with {workspaceHandle}
-        </h1>
+        {/* Profile Header */}
+        {!profileLoading && workspaceProfile && (
+          <div className="flex-shrink-0 space-y-4 rounded-lg border bg-card p-6">
+            <div className="flex items-start gap-4">
+              <Avatar className="h-16 w-16 flex-shrink-0">
+                <AvatarImage
+                  src={workspaceProfile.profile_image_url || undefined}
+                  alt={displayNameCapitalized}
+                />
+                <AvatarFallback className="text-lg">
+                  {displayNameCapitalized
+                    .split(" ")
+                    .map((n) => n[0])
+                    .join("")
+                    .toUpperCase()
+                    .slice(0, 2)}
+                </AvatarFallback>
+              </Avatar>
+              <div className="flex-1 space-y-1">
+                <div className="flex items-center gap-2">
+                  <h1 className="text-2xl font-bold">
+                    {displayNameCapitalized}
+                  </h1>
+                  <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
+                    <div className="h-2 w-2 rounded-full bg-green-500" />
+                    <span>Available to chat</span>
+                  </div>
+                </div>
+                {workspaceProfile.subtitle && (
+                  <p className="text-base text-muted-foreground">
+                    {workspaceProfile.subtitle}
+                  </p>
+                )}
+                {workspaceProfile.description && (
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    {workspaceProfile.description}
+                  </p>
+                )}
+              </div>
+            </div>
+          </div>
+        )}
+        {profileLoading && (
+          <div className="flex-shrink-0">
+            <div className="h-24 w-full animate-pulse rounded-lg bg-muted" />
+          </div>
+        )}
+        {!profileLoading && !workspaceProfile && (
+          <h1 className="flex-shrink-0 text-xl font-semibold">
+            Chat with {workspaceHandle}
+          </h1>
+        )}
         <Card className="flex min-h-0 flex-1 flex-col gap-2 overflow-hidden p-4">
           <div
             ref={messagesContainerRef}
@@ -331,7 +419,9 @@ export default function PublicChatPage() {
                     Welcome!
                   </p>
                   <p className="mt-2 text-sm text-muted-foreground">
-                    Say hi to start the conversation.
+                    {workspaceProfile?.public_name
+                      ? `I'm an AI assistant representing ${workspaceProfile.public_name}. Ask me anything!`
+                      : "Say hi to start the conversation."}
                   </p>
                 </div>
               </div>

@@ -1,0 +1,9 @@
+[2025-11-30T18:43:20.395Z] Error: Unsupported OpenAPI specification
+Stack:
+Error: Unsupported OpenAPI specification
+    at Ec (file:///Users/enriquediazdeleonhicks/repositories/base-platform-replit-v1-web/frontend/node_modules/@hey-api/openapi-ts/dist/getSpec-1BMHZkPH.js:13:135708)
+    at q (file:///Users/enriquediazdeleonhicks/repositories/base-platform-replit-v1-web/frontend/node_modules/@hey-api/openapi-ts/dist/src-CQ_69Vcm.js:4:13810)
+    at async file:///Users/enriquediazdeleonhicks/repositories/base-platform-replit-v1-web/frontend/node_modules/@hey-api/openapi-ts/dist/src-CQ_69Vcm.js:1309:5354
+    at async Promise.all (index 0)
+    at async yt (file:///Users/enriquediazdeleonhicks/repositories/base-platform-replit-v1-web/frontend/node_modules/@hey-api/openapi-ts/dist/src-CQ_69Vcm.js:1309:5301)
+    at async file:///Users/enriquediazdeleonhicks/repositories/base-platform-replit-v1-web/frontend/node_modules/@hey-api/openapi-ts/dist/run.js:2:2340

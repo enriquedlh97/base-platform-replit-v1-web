@@ -28,6 +28,14 @@ export interface ListMessagesResponse {
   next_since: string | null;
 }
 
+export interface WorkspaceProfilePublic {
+  handle: string;
+  public_name: string | null;
+  subtitle: string | null;
+  description: string | null;
+  profile_image_url: string | null;
+}
+
 import { env } from "@/lib/env";
 
 function ensureApiV1Base(url: string): string {
@@ -77,4 +85,6 @@ export const PublicChatApi = {
       `/public/conversations/${conversationId}/messages${suffix}`
     );
   },
+  getWorkspaceProfile: (workspaceHandle: string) =>
+    http<WorkspaceProfilePublic>(`/public/workspaces/${workspaceHandle}`),
 };

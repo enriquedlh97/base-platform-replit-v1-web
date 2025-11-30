@@ -201,6 +201,16 @@ export type BodyUsersUploadAvatarMe = {
 };
 
 /**
+ * Body_workspaces-upload_workspace_profile_image
+ */
+export type BodyWorkspacesUploadWorkspaceProfileImage = {
+    /**
+     * Profile Image
+     */
+    profile_image: Blob | File;
+};
+
+/**
  * CategoryPublic
  */
 export type CategoryPublic = {
@@ -443,6 +453,34 @@ export type ConversationUpdate = {
 };
 
 /**
+ * CreatePublicConversationRequest
+ */
+export type CreatePublicConversationRequest = {
+    /**
+     * Workspace Handle
+     */
+    workspace_handle: string;
+    /**
+     * Idempotency Key
+     */
+    idempotency_key?: string | null;
+};
+
+/**
+ * CreatePublicConversationResponse
+ */
+export type CreatePublicConversationResponse = {
+    /**
+     * Conversation Id
+     */
+    conversation_id: string;
+    /**
+     * Created At
+     */
+    created_at: string;
+};
+
+/**
  * EventCreate
  */
 export type EventCreate = {
@@ -585,6 +623,20 @@ export type ItemsPublic = {
 };
 
 /**
+ * ListMessagesResponse
+ */
+export type ListMessagesResponse = {
+    /**
+     * Messages
+     */
+    messages: Array<ConversationMessagePublic>;
+    /**
+     * Next Since
+     */
+    next_since: string | null;
+};
+
+/**
  * Message
  */
 export type Message = {
@@ -635,6 +687,24 @@ export type PostPublic = {
      */
     category_name?: string | null;
     author?: UserPublic | null;
+};
+
+/**
+ * PostPublicMessageRequest
+ */
+export type PostPublicMessageRequest = {
+    /**
+     * Role
+     */
+    role: string;
+    /**
+     * Content
+     */
+    content: string;
+    /**
+     * Idempotency Key
+     */
+    idempotency_key?: string | null;
 };
 
 /**
@@ -1332,6 +1402,34 @@ export type WorkspaceCreate = {
 };
 
 /**
+ * WorkspaceProfilePublic
+ *
+ * Public workspace profile information for display on public chat page.
+ */
+export type WorkspaceProfilePublic = {
+    /**
+     * Handle
+     */
+    handle: string;
+    /**
+     * Public Name
+     */
+    public_name: string | null;
+    /**
+     * Subtitle
+     */
+    subtitle: string | null;
+    /**
+     * Description
+     */
+    description: string | null;
+    /**
+     * Profile Image Url
+     */
+    profile_image_url: string | null;
+};
+
+/**
  * WorkspacePublic
  */
 export type WorkspacePublic = {
@@ -1371,6 +1469,22 @@ export type WorkspacePublic = {
      * Knowledge Base
      */
     knowledge_base?: string | null;
+    /**
+     * Public Name
+     */
+    public_name?: string | null;
+    /**
+     * Subtitle
+     */
+    subtitle?: string | null;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Profile Image Url
+     */
+    profile_image_url?: string | null;
     /**
      * Created At
      */
@@ -1531,6 +1645,22 @@ export type WorkspaceUpdate = {
      * Knowledge Base
      */
     knowledge_base?: string | null;
+    /**
+     * Public Name
+     */
+    public_name?: string | null;
+    /**
+     * Subtitle
+     */
+    subtitle?: string | null;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Profile Image Url
+     */
+    profile_image_url?: string | null;
 };
 
 export type LoginTestTokenData = {
@@ -2773,6 +2903,36 @@ export type WorkspacesUpdateWorkspaceResponses = {
 
 export type WorkspacesUpdateWorkspaceResponse = WorkspacesUpdateWorkspaceResponses[keyof WorkspacesUpdateWorkspaceResponses];
 
+export type WorkspacesUploadWorkspaceProfileImageData = {
+    body: BodyWorkspacesUploadWorkspaceProfileImage;
+    path: {
+        /**
+         * Workspace Id
+         */
+        workspace_id: string;
+    };
+    query?: never;
+    url: '/api/v1/workspaces/{workspace_id}/profile-image';
+};
+
+export type WorkspacesUploadWorkspaceProfileImageErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type WorkspacesUploadWorkspaceProfileImageError = WorkspacesUploadWorkspaceProfileImageErrors[keyof WorkspacesUploadWorkspaceProfileImageErrors];
+
+export type WorkspacesUploadWorkspaceProfileImageResponses = {
+    /**
+     * Successful Response
+     */
+    200: WorkspacePublic;
+};
+
+export type WorkspacesUploadWorkspaceProfileImageResponse = WorkspacesUploadWorkspaceProfileImageResponses[keyof WorkspacesUploadWorkspaceProfileImageResponses];
+
 export type WorkspaceServicesGetWorkspaceServicesData = {
     body?: never;
     path: {
@@ -3472,6 +3632,167 @@ export type MessagesGetMessageResponses = {
 };
 
 export type MessagesGetMessageResponse = MessagesGetMessageResponses[keyof MessagesGetMessageResponses];
+
+export type PublicGetWorkspaceProfileData = {
+    body?: never;
+    path: {
+        /**
+         * Workspace Handle
+         */
+        workspace_handle: string;
+    };
+    query?: never;
+    url: '/api/v1/public/workspaces/{workspace_handle}';
+};
+
+export type PublicGetWorkspaceProfileErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type PublicGetWorkspaceProfileError = PublicGetWorkspaceProfileErrors[keyof PublicGetWorkspaceProfileErrors];
+
+export type PublicGetWorkspaceProfileResponses = {
+    /**
+     * Successful Response
+     */
+    200: WorkspaceProfilePublic;
+};
+
+export type PublicGetWorkspaceProfileResponse = PublicGetWorkspaceProfileResponses[keyof PublicGetWorkspaceProfileResponses];
+
+export type PublicCreatePublicConversationData = {
+    body: CreatePublicConversationRequest;
+    path?: never;
+    query?: never;
+    url: '/api/v1/public/conversations';
+};
+
+export type PublicCreatePublicConversationErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type PublicCreatePublicConversationError = PublicCreatePublicConversationErrors[keyof PublicCreatePublicConversationErrors];
+
+export type PublicCreatePublicConversationResponses = {
+    /**
+     * Successful Response
+     */
+    200: CreatePublicConversationResponse;
+};
+
+export type PublicCreatePublicConversationResponse = PublicCreatePublicConversationResponses[keyof PublicCreatePublicConversationResponses];
+
+export type PublicListPublicMessagesData = {
+    body?: never;
+    path: {
+        /**
+         * Conversation Id
+         */
+        conversation_id: string;
+    };
+    query?: {
+        /**
+         *  Since
+         */
+        _since?: string | null;
+        /**
+         * Limit
+         */
+        limit?: number;
+    };
+    url: '/api/v1/public/conversations/{conversation_id}/messages';
+};
+
+export type PublicListPublicMessagesErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type PublicListPublicMessagesError = PublicListPublicMessagesErrors[keyof PublicListPublicMessagesErrors];
+
+export type PublicListPublicMessagesResponses = {
+    /**
+     * Successful Response
+     */
+    200: ListMessagesResponse;
+};
+
+export type PublicListPublicMessagesResponse = PublicListPublicMessagesResponses[keyof PublicListPublicMessagesResponses];
+
+export type PublicPostPublicMessageData = {
+    body: PostPublicMessageRequest;
+    path: {
+        /**
+         * Conversation Id
+         */
+        conversation_id: string;
+    };
+    query?: never;
+    url: '/api/v1/public/conversations/{conversation_id}/messages';
+};
+
+export type PublicPostPublicMessageErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type PublicPostPublicMessageError = PublicPostPublicMessageErrors[keyof PublicPostPublicMessageErrors];
+
+export type PublicPostPublicMessageResponses = {
+    /**
+     * Successful Response
+     */
+    200: ConversationMessagePublic;
+};
+
+export type PublicPostPublicMessageResponse = PublicPostPublicMessageResponses[keyof PublicPostPublicMessageResponses];
+
+export type PublicStreamPublicConversationData = {
+    body?: never;
+    path: {
+        /**
+         * Conversation Id
+         */
+        conversation_id: string;
+    };
+    query?: {
+        /**
+         *  Since
+         */
+        _since?: string | null;
+        /**
+         * Request Id
+         */
+        request_id?: string | null;
+    };
+    url: '/api/v1/public/conversations/{conversation_id}/stream';
+};
+
+export type PublicStreamPublicConversationErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type PublicStreamPublicConversationError = PublicStreamPublicConversationErrors[keyof PublicStreamPublicConversationErrors];
+
+export type PublicStreamPublicConversationResponses = {
+    /**
+     * Successful Response
+     */
+    200: unknown;
+};
 
 export type PrivateCreateUserData = {
     body: PrivateUserCreate;
