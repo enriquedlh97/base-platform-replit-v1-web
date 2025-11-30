@@ -55,6 +55,7 @@ class CUASchedulingTool:
             date = args.get("date", "").strip()
             time = args.get("time", "").strip()
             calendly_url = args.get("calendly_url", "").strip()
+            notes = args.get("notes", "").strip()  # Optional meeting notes
 
             # Validate required fields
             if not name:
@@ -114,6 +115,14 @@ class CUASchedulingTool:
                 f"for example if the requested time is 1pm and in the options you see 12:30pm, 1:30pm, then it means the time slot is not available and you should stop the task immediately saying that the time isnt avalbale."
             )
 
+            # Add notes if provided - Calendly usually has a textarea for meeting preparation notes
+            if notes:
+                instruction += (
+                    f" Also, there is usually a text field or textarea on the booking form asking something like "
+                    f"'Please share anything that will help prepare for our meeting' or 'Add any notes' - "
+                    f'please add the following notes there: "{notes}"'
+                )
+
             # Log all the details being sent to CUA
             logger.info("=" * 80)
             logger.info("CUA SCHEDULING REQUEST - DETAILS:")
@@ -122,6 +131,7 @@ class CUASchedulingTool:
             logger.info(f"  Date: {date}")
             logger.info(f"  Time: {time}")
             logger.info(f"  Calendly URL: {calendly_url}")
+            logger.info(f"  Notes: {notes if notes else '(none)'}")
             logger.info("-" * 80)
             logger.info("FULL INSTRUCTION BEING SENT TO CUA:")
             logger.info(instruction)
