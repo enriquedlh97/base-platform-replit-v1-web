@@ -149,6 +149,11 @@ const navigationData = {
       icon: IconDatabase,
     },
     {
+      name: "Tasks",
+      url: "/tasks",
+      icon: IconClock,
+    },
+    {
       name: "Reports",
       url: "#",
       icon: IconReport,
