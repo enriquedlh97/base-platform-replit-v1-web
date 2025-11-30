@@ -134,14 +134,19 @@ const navigationData = {
   ],
   documents: [
     {
-      name: "Knowledge Base",
-      url: "/knowledge-base",
-      icon: IconDatabase,
+      name: "Conversations",
+      url: "/conversations",
+      icon: IconMessageCircle,
     },
     {
       name: "Tasks",
       url: "/tasks",
       icon: IconClock,
+    },
+    {
+      name: "Knowledge Base",
+      url: "/knowledge-base",
+      icon: IconDatabase,
     },
     {
       name: "Reports",

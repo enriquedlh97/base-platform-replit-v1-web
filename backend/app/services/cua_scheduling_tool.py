@@ -105,13 +105,13 @@ class CUASchedulingTool:
             # Format the instruction for CUA
             # This matches the format you tested successfully
             instruction = (
-                f"hi im {name}, i want to schedule an appointment for {date} at {time}, "
+                f"Hi I'm {name}, I want to schedule an appointment for {date} at {time}, "
                 f"my email is {email}: {calendly_url} "
                 f"make sure eastern time is selected since it usually defaults to UTC or something like that. "
                 f"You can click the place to select the time and there is an input box where you can write 'eastern', "
                 f"and that should show the correct one and then you can just click. also, if the specific day and time is "
                 f"not available, then just stop the task say that saying so, it will be marked as failed. no need for you search for other ways to book or anything. "
-                f"for example if the requested time is 1pm and in the options you see 12:30pm, 1:30pm, then it means the time slot is not availbale and you should stop THE task immediately saying that the time isnt avalbale."
+                f"for example if the requested time is 1pm and in the options you see 12:30pm, 1:30pm, then it means the time slot is not available and you should stop the task immediately saying that the time isnt avalbale."
             )
 
             # Log all the details being sent to CUA

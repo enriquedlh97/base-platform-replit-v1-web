@@ -423,6 +423,74 @@ export type ConversationPublic = {
 };
 
 /**
+ * ConversationSummary
+ *
+ * Conversation summary with message count and task count for list view.
+ */
+export type ConversationSummary = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Workspace Id
+     */
+    workspace_id: string;
+    /**
+     * Visitor Name
+     */
+    visitor_name?: string | null;
+    /**
+     * Visitor Email
+     */
+    visitor_email?: string | null;
+    /**
+     * Channel
+     */
+    channel: string;
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Human Time Saved Minutes
+     */
+    human_time_saved_minutes?: number | null;
+    /**
+     * Tags
+     */
+    tags?: Array<string> | null;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+    /**
+     * Message Count
+     */
+    message_count?: number;
+    /**
+     * Task Count
+     */
+    task_count?: number;
+    /**
+     * Last Message Content
+     */
+    last_message_content?: string | null;
+    /**
+     * Last Message Role
+     */
+    last_message_role?: string | null;
+    /**
+     * Last Message At
+     */
+    last_message_at?: string | null;
+};
+
+/**
  * ConversationUpdate
  */
 export type ConversationUpdate = {
@@ -450,6 +518,74 @@ export type ConversationUpdate = {
      * Tags
      */
     tags?: Array<string> | null;
+};
+
+/**
+ * ConversationWithTasks
+ *
+ * Conversation detail with associated tasks.
+ */
+export type ConversationWithTasks = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Workspace Id
+     */
+    workspace_id: string;
+    /**
+     * Visitor Name
+     */
+    visitor_name?: string | null;
+    /**
+     * Visitor Email
+     */
+    visitor_email?: string | null;
+    /**
+     * Channel
+     */
+    channel: string;
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Human Time Saved Minutes
+     */
+    human_time_saved_minutes?: number | null;
+    /**
+     * Tags
+     */
+    tags?: Array<string> | null;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+    /**
+     * Tasks
+     */
+    tasks?: Array<CuaTaskSummary>;
+};
+
+/**
+ * ConversationsListPublic
+ *
+ * Paginated list of conversations with summaries.
+ */
+export type ConversationsListPublic = {
+    /**
+     * Data
+     */
+    data: Array<ConversationSummary>;
+    /**
+     * Count
+     */
+    count: number;
 };
 
 /**
@@ -3513,6 +3649,51 @@ export type ConversationsCreateConversationResponses = {
 
 export type ConversationsCreateConversationResponse = ConversationsCreateConversationResponses[keyof ConversationsCreateConversationResponses];
 
+export type ConversationsGetWorkspaceConversationsWithSummariesData = {
+    body?: never;
+    path: {
+        /**
+         * Workspace Id
+         */
+        workspace_id: string;
+    };
+    query?: {
+        /**
+         * Status
+         *
+         * Filter by status
+         */
+        status?: string | null;
+        /**
+         * Skip
+         */
+        skip?: number;
+        /**
+         * Limit
+         */
+        limit?: number;
+    };
+    url: '/api/v1/conversations/workspaces/{workspace_id}/summaries';
+};
+
+export type ConversationsGetWorkspaceConversationsWithSummariesErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ConversationsGetWorkspaceConversationsWithSummariesError = ConversationsGetWorkspaceConversationsWithSummariesErrors[keyof ConversationsGetWorkspaceConversationsWithSummariesErrors];
+
+export type ConversationsGetWorkspaceConversationsWithSummariesResponses = {
+    /**
+     * Successful Response
+     */
+    200: ConversationsListPublic;
+};
+
+export type ConversationsGetWorkspaceConversationsWithSummariesResponse = ConversationsGetWorkspaceConversationsWithSummariesResponses[keyof ConversationsGetWorkspaceConversationsWithSummariesResponses];
+
 export type ConversationsDeleteConversationData = {
     body?: never;
     path: {
@@ -3602,6 +3783,36 @@ export type ConversationsUpdateConversationResponses = {
 };
 
 export type ConversationsUpdateConversationResponse = ConversationsUpdateConversationResponses[keyof ConversationsUpdateConversationResponses];
+
+export type ConversationsGetConversationWithTasksData = {
+    body?: never;
+    path: {
+        /**
+         * Conversation Id
+         */
+        conversation_id: string;
+    };
+    query?: never;
+    url: '/api/v1/conversations/{conversation_id}/with-tasks';
+};
+
+export type ConversationsGetConversationWithTasksErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ConversationsGetConversationWithTasksError = ConversationsGetConversationWithTasksErrors[keyof ConversationsGetConversationWithTasksErrors];
+
+export type ConversationsGetConversationWithTasksResponses = {
+    /**
+     * Successful Response
+     */
+    200: ConversationWithTasks;
+};
+
+export type ConversationsGetConversationWithTasksResponse = ConversationsGetConversationWithTasksResponses[keyof ConversationsGetConversationWithTasksResponses];
 
 export type ConversationsGetConversationMessagesData = {
     body?: never;

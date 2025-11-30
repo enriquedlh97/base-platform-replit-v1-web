@@ -2237,6 +2237,81 @@
         }
       }
     },
+    "/api/v1/conversations/workspaces/{workspace_id}/summaries": {
+      "get": {
+        "tags": ["conversations"],
+        "summary": "Get Workspace Conversations With Summaries",
+        "description": "Get conversations for a workspace with message and task counts.\n\nReturns a list of conversations with summary information including:\n- Message count\n- Task count\n- Last message preview",
+        "operationId": "conversations-get_workspace_conversations_with_summaries",
+        "security": [{ "SupabaseBearer": [] }],
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Workspace Id"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "description": "Filter by status",
+              "title": "Status"
+            },
+            "description": "Filter by status"
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationsListPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/conversations/{conversation_id}": {
       "get": {
         "tags": ["conversations"],
@@ -2344,6 +2419,47 @@
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/Message" }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/conversations/{conversation_id}/with-tasks": {
+      "get": {
+        "tags": ["conversations"],
+        "summary": "Get Conversation With Tasks",
+        "description": "Get a conversation with its associated CUA tasks.",
+        "operationId": "conversations-get_conversation_with_tasks",
+        "security": [{ "SupabaseBearer": [] }],
+        "parameters": [
+          {
+            "name": "conversation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Conversation Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationWithTasks"
+                }
               }
             }
           },
@@ -3578,6 +3694,83 @@
         ],
         "title": "ConversationPublic"
       },
+      "ConversationSummary": {
+        "properties": {
+          "id": { "type": "string", "format": "uuid", "title": "Id" },
+          "workspace_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          },
+          "visitor_name": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Visitor Name"
+          },
+          "visitor_email": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Visitor Email"
+          },
+          "channel": { "type": "string", "title": "Channel" },
+          "status": { "type": "string", "title": "Status" },
+          "human_time_saved_minutes": {
+            "anyOf": [{ "type": "integer" }, { "type": "null" }],
+            "title": "Human Time Saved Minutes"
+          },
+          "tags": {
+            "anyOf": [
+              { "items": { "type": "string" }, "type": "array" },
+              { "type": "null" }
+            ],
+            "title": "Tags"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "message_count": {
+            "type": "integer",
+            "title": "Message Count",
+            "default": 0
+          },
+          "task_count": {
+            "type": "integer",
+            "title": "Task Count",
+            "default": 0
+          },
+          "last_message_content": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Last Message Content"
+          },
+          "last_message_role": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Last Message Role"
+          },
+          "last_message_at": {
+            "anyOf": [
+              { "type": "string", "format": "date-time" },
+              { "type": "null" }
+            ],
+            "title": "Last Message At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "workspace_id",
+          "channel",
+          "status",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "ConversationSummary",
+        "description": "Conversation summary with message count and task count for list view."
+      },
       "ConversationUpdate": {
         "properties": {
           "visitor_name": {
@@ -3622,6 +3815,78 @@
         },
         "type": "object",
         "title": "ConversationUpdate"
+      },
+      "ConversationWithTasks": {
+        "properties": {
+          "id": { "type": "string", "format": "uuid", "title": "Id" },
+          "workspace_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          },
+          "visitor_name": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Visitor Name"
+          },
+          "visitor_email": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Visitor Email"
+          },
+          "channel": { "type": "string", "title": "Channel" },
+          "status": { "type": "string", "title": "Status" },
+          "human_time_saved_minutes": {
+            "anyOf": [{ "type": "integer" }, { "type": "null" }],
+            "title": "Human Time Saved Minutes"
+          },
+          "tags": {
+            "anyOf": [
+              { "items": { "type": "string" }, "type": "array" },
+              { "type": "null" }
+            ],
+            "title": "Tags"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "tasks": {
+            "items": { "$ref": "#/components/schemas/CuaTaskSummary" },
+            "type": "array",
+            "title": "Tasks",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "workspace_id",
+          "channel",
+          "status",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "ConversationWithTasks",
+        "description": "Conversation detail with associated tasks."
+      },
+      "ConversationsListPublic": {
+        "properties": {
+          "data": {
+            "items": { "$ref": "#/components/schemas/ConversationSummary" },
+            "type": "array",
+            "title": "Data"
+          },
+          "count": { "type": "integer", "title": "Count" }
+        },
+        "type": "object",
+        "required": ["data", "count"],
+        "title": "ConversationsListPublic",
+        "description": "Paginated list of conversations with summaries."
       },
       "CreatePublicConversationRequest": {
         "properties": {

@@ -717,6 +717,49 @@ class ConversationPublic(SQLModel):
     updated_at: datetime
 
 
+class ConversationSummary(SQLModel):
+    """Conversation summary with message count and task count for list view."""
+
+    id: UUID
+    workspace_id: UUID
+    visitor_name: str | None = None
+    visitor_email: str | None = None
+    channel: str
+    status: str
+    human_time_saved_minutes: int | None = None
+    tags: list[str] | None = None
+    created_at: datetime
+    updated_at: datetime
+    message_count: int = 0
+    task_count: int = 0
+    last_message_content: str | None = None
+    last_message_role: str | None = None
+    last_message_at: datetime | None = None
+
+
+class ConversationsListPublic(SQLModel):
+    """Paginated list of conversations with summaries."""
+
+    data: list[ConversationSummary]
+    count: int
+
+
+class ConversationWithTasks(SQLModel):
+    """Conversation detail with associated tasks."""
+
+    id: UUID
+    workspace_id: UUID
+    visitor_name: str | None = None
+    visitor_email: str | None = None
+    channel: str
+    status: str
+    human_time_saved_minutes: int | None = None
+    tags: list[str] | None = None
+    created_at: datetime
+    updated_at: datetime
+    tasks: list["CuaTaskSummary"] = []
+
+
 class ConversationMessageBase(SQLModel):
     content: str
     role: str = Field(max_length=50)
