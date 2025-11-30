@@ -2858,6 +2858,191 @@
         }
       }
     },
+    "/api/v1/cua-tasks/": {
+      "get": {
+        "tags": ["cua-tasks"],
+        "summary": "List Cua Tasks",
+        "description": "List CUA tasks for the current user's workspace.\n\nResults are ordered by created_at descending (most recent first).",
+        "operationId": "cua-tasks-list_cua_tasks",
+        "security": [{ "SupabaseBearer": [] }],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "description": "Filter by status (pending, running, completed, failed, stopped, timeout)",
+              "title": "Status"
+            },
+            "description": "Filter by status (pending, running, completed, failed, stopped, timeout)"
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CuaTasksPublic" }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cua-tasks/active": {
+      "get": {
+        "tags": ["cua-tasks"],
+        "summary": "List Active Cua Tasks",
+        "description": "List active (pending or running) CUA tasks for the current user's workspace.",
+        "operationId": "cua-tasks-list_active_cua_tasks",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CuaTasksPublic" }
+              }
+            }
+          }
+        },
+        "security": [{ "SupabaseBearer": [] }]
+      }
+    },
+    "/api/v1/cua-tasks/{task_id}": {
+      "get": {
+        "tags": ["cua-tasks"],
+        "summary": "Get Cua Task",
+        "description": "Get a single CUA task by ID, including all step data.",
+        "operationId": "cua-tasks-get_cua_task",
+        "security": [{ "SupabaseBearer": [] }],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid", "title": "Task Id" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CuaTaskPublic" }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["cua-tasks"],
+        "summary": "Stop Cua Task",
+        "description": "Stop a running CUA task.\n\nThis will attempt to stop the task if it's currently running.\nNote: The actual stopping is best-effort and depends on the CUA backend.",
+        "operationId": "cua-tasks-stop_cua_task",
+        "security": [{ "SupabaseBearer": [] }],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid", "title": "Task Id" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "title": "Response Cua-Tasks-Stop Cua Task" }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cua-tasks/{task_id}/permanently": {
+      "delete": {
+        "tags": ["cua-tasks"],
+        "summary": "Delete Cua Task",
+        "description": "Permanently delete a CUA task.\n\nThis removes the task and all its step data from the database.",
+        "operationId": "cua-tasks-delete_cua_task",
+        "security": [{ "SupabaseBearer": [] }],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid", "title": "Task Id" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "title": "Response Cua-Tasks-Delete Cua Task" }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/private/users/": {
       "post": {
         "tags": ["private"],
@@ -3474,6 +3659,167 @@
         "type": "object",
         "required": ["conversation_id", "created_at"],
         "title": "CreatePublicConversationResponse"
+      },
+      "CuaTaskPublic": {
+        "properties": {
+          "id": { "type": "string", "format": "uuid", "title": "Id" },
+          "workspace_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          },
+          "conversation_id": {
+            "anyOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ],
+            "title": "Conversation Id"
+          },
+          "trace_id": { "type": "string", "title": "Trace Id" },
+          "instruction": { "type": "string", "title": "Instruction" },
+          "status": { "type": "string", "title": "Status" },
+          "model_id": { "type": "string", "title": "Model Id" },
+          "final_state": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Final State"
+          },
+          "error_message": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Error Message"
+          },
+          "steps": {
+            "items": { "additionalProperties": true, "type": "object" },
+            "type": "array",
+            "title": "Steps",
+            "default": []
+          },
+          "task_metadata": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Task Metadata",
+            "default": {}
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Started At"
+          },
+          "completed_at": {
+            "anyOf": [
+              { "type": "string", "format": "date-time" },
+              { "type": "null" }
+            ],
+            "title": "Completed At"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "workspace_id",
+          "trace_id",
+          "instruction",
+          "status",
+          "model_id",
+          "started_at",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "CuaTaskPublic",
+        "description": "Properties to return via API for CUA tasks"
+      },
+      "CuaTaskSummary": {
+        "properties": {
+          "id": { "type": "string", "format": "uuid", "title": "Id" },
+          "workspace_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          },
+          "conversation_id": {
+            "anyOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ],
+            "title": "Conversation Id"
+          },
+          "trace_id": { "type": "string", "title": "Trace Id" },
+          "instruction": { "type": "string", "title": "Instruction" },
+          "status": { "type": "string", "title": "Status" },
+          "model_id": { "type": "string", "title": "Model Id" },
+          "final_state": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Final State"
+          },
+          "error_message": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Error Message"
+          },
+          "step_count": {
+            "type": "integer",
+            "title": "Step Count",
+            "default": 0
+          },
+          "task_metadata": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Task Metadata",
+            "default": {}
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Started At"
+          },
+          "completed_at": {
+            "anyOf": [
+              { "type": "string", "format": "date-time" },
+              { "type": "null" }
+            ],
+            "title": "Completed At"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "workspace_id",
+          "trace_id",
+          "instruction",
+          "status",
+          "model_id",
+          "started_at",
+          "created_at"
+        ],
+        "title": "CuaTaskSummary",
+        "description": "Summary view for task list (without full step data)"
+      },
+      "CuaTasksPublic": {
+        "properties": {
+          "data": {
+            "items": { "$ref": "#/components/schemas/CuaTaskSummary" },
+            "type": "array",
+            "title": "Data"
+          },
+          "count": { "type": "integer", "title": "Count" }
+        },
+        "type": "object",
+        "required": ["data", "count"],
+        "title": "CuaTasksPublic",
+        "description": "Paginated list of CUA tasks"
       },
       "EventCreate": {
         "properties": {

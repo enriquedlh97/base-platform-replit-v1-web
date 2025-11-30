@@ -3,7 +3,9 @@
 import logging
 import os
 from typing import Any
+from uuid import UUID
 
+from app.agent.core.context import get_conversation_id, get_workspace_id
 from app.services.cua_client import CUAClientError, send_task_to_cua
 
 logger = logging.getLogger(__name__)
@@ -125,12 +127,24 @@ class CUASchedulingTool:
             logger.info(instruction)
             logger.info("=" * 80)
 
+            # Get workspace and conversation IDs from context for task persistence
+            workspace_id: UUID | None = get_workspace_id()
+            conversation_id: UUID | None = get_conversation_id()
+
+            logger.info(
+                f"Workspace ID from context: {workspace_id}, Conversation ID: {conversation_id}"
+            )
+
             # Send task to CUA and wait for completion
+            # Ensure cua_ws_url is not None
+            ws_url = self.cua_ws_url or "ws://localhost:7860/ws"
             result = await send_task_to_cua(
                 instruction=instruction,
                 model_id=self.default_model_id,
-                cua_ws_url=self.cua_ws_url,
+                cua_ws_url=ws_url,
                 timeout_seconds=300,  # 5 minutes timeout
+                workspace_id=workspace_id,
+                conversation_id=conversation_id,
             )
 
             # Log the agent's final answer

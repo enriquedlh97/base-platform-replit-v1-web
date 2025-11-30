@@ -15,6 +15,7 @@ from pydantic import BaseModel, Field
 from sqlmodel import select
 from sqlmodel.sql._expression_select_cls import SelectOfScalar
 
+from app.agent.core.context import clear_agent_context, set_agent_context
 from app.agent.graph.graph import stream_agent_reply
 from app.agent.interfaces.http.sse import encode_sse_event
 from app.api.deps import SessionDep
@@ -286,6 +287,13 @@ async def stream_public_conversation(
         full_text_chunks: list[str] = []
         # message_start
         yield encode_sse_event("message_start", {"message_id": str(conversation_id)})
+
+        # Set agent context for tool access to workspace/conversation IDs
+        set_agent_context(
+            workspace_id=workspace.id,
+            conversation_id=conversation_id,
+        )
+
         try:
             async for evt in stream_agent_reply(
                 workspace_knowledge_base_text=workspace.knowledge_base or "",
@@ -377,5 +385,8 @@ async def stream_public_conversation(
                 "latency_ms": latency_ms,
             },
         )
+
+        # Clear agent context after execution
+        clear_agent_context()
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")

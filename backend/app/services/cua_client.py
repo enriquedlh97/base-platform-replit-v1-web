@@ -5,6 +5,7 @@ import json
 import logging
 from datetime import datetime, timezone
 from typing import Any
+from uuid import UUID
 
 import websockets
 from websockets.exceptions import ConnectionClosed, WebSocketException
@@ -18,11 +19,148 @@ class CUAClientError(Exception):
     pass
 
 
+class CuaTaskPersistence:
+    """Handles persistence of CUA task data to the database."""
+
+    def __init__(self, workspace_id: UUID, conversation_id: UUID | None = None):
+        self.workspace_id = workspace_id
+        self.conversation_id = conversation_id
+        self.task_id: UUID | None = None
+
+    async def create_task(
+        self,
+        trace_id: str,
+        instruction: str,
+        model_id: str,
+    ) -> UUID:
+        """Create a new CuaTask record in the database."""
+        from app.api.deps import get_db
+        from app.models import CuaTask, CuaTaskStatus
+
+        def _create_task() -> UUID:
+            db = next(get_db())
+            try:
+                task = CuaTask(
+                    workspace_id=self.workspace_id,
+                    conversation_id=self.conversation_id,
+                    trace_id=trace_id,
+                    instruction=instruction,
+                    model_id=model_id,
+                    status=CuaTaskStatus.RUNNING,
+                    steps=[],
+                    task_metadata={
+                        "input_tokens_used": 0,
+                        "output_tokens_used": 0,
+                        "duration": 0.0,
+                        "number_of_steps": 0,
+                        "max_steps": 30,
+                    },
+                    started_at=datetime.now(timezone.utc),
+                )
+                db.add(task)
+                db.commit()
+                db.refresh(task)
+                if not task.id:
+                    raise ValueError("Task ID not generated")
+                return task.id
+            finally:
+                db.close()
+
+        self.task_id = await asyncio.to_thread(_create_task)
+        logger.info(f"Created CUA task record: {self.task_id}")
+        return self.task_id
+
+    async def add_step(
+        self, step_data: dict[str, Any], metadata: dict[str, Any]
+    ) -> None:
+        """Add a step to the CuaTask record."""
+        if not self.task_id:
+            return
+
+        from app.api.deps import get_db
+        from app.models import CuaTask
+
+        def _add_step() -> None:
+            db = next(get_db())
+            try:
+                task = db.get(CuaTask, self.task_id)
+                if task:
+                    # Append step to steps array
+                    steps = list(task.steps) if task.steps else []
+                    steps.append(step_data)
+                    task.steps = steps
+
+                    # Update task_metadata
+                    task.task_metadata = {
+                        "input_tokens_used": metadata.get("inputTokensUsed", 0),
+                        "output_tokens_used": metadata.get("outputTokensUsed", 0),
+                        "duration": metadata.get("duration", 0.0),
+                        "number_of_steps": metadata.get("numberOfSteps", 0),
+                        "max_steps": metadata.get("maxSteps", 30),
+                    }
+                    task.updated_at = datetime.now(timezone.utc)
+                    db.add(task)
+                    db.commit()
+            finally:
+                db.close()
+
+        await asyncio.to_thread(_add_step)
+        logger.debug(f"Added step to CUA task: {self.task_id}")
+
+    async def complete_task(
+        self,
+        final_state: str,
+        error_message: str | None = None,
+    ) -> None:
+        """Mark the CuaTask as completed."""
+        if not self.task_id:
+            return
+
+        from app.api.deps import get_db
+        from app.models import CuaTask, CuaTaskStatus
+
+        def _complete_task() -> None:
+            db = next(get_db())
+            try:
+                task = db.get(CuaTask, self.task_id)
+                if task:
+                    # Map CUA final_state to our status
+                    status_map = {
+                        "success": CuaTaskStatus.COMPLETED,
+                        "error": CuaTaskStatus.FAILED,
+                        "stopped": CuaTaskStatus.STOPPED,
+                        "max_steps_reached": CuaTaskStatus.COMPLETED,
+                        "sandbox_timeout": CuaTaskStatus.TIMEOUT,
+                    }
+                    task.status = status_map.get(final_state, CuaTaskStatus.FAILED)
+                    task.final_state = final_state
+                    task.error_message = error_message
+                    task.completed_at = datetime.now(timezone.utc)
+                    task.updated_at = datetime.now(timezone.utc)
+                    db.add(task)
+                    db.commit()
+            finally:
+                db.close()
+
+        await asyncio.to_thread(_complete_task)
+        logger.info(f"Completed CUA task: {self.task_id} with state: {final_state}")
+
+    async def mark_timeout(self) -> None:
+        """Mark the task as timed out."""
+        await self.complete_task("timeout", "Task timed out")
+
+    async def mark_error(self, error_message: str) -> None:
+        """Mark the task as errored."""
+        await self.complete_task("error", error_message)
+
+
 async def send_task_to_cua(
     instruction: str,
     model_id: str = "Qwen/Qwen3-VL-30B-A3B-Instruct",
     cua_ws_url: str = "ws://localhost:7860/ws",
     timeout_seconds: int = 300,
+    workspace_id: UUID | None = None,
+    conversation_id: UUID | None = None,
 ) -> dict[str, Any]:
     """Send a task to CUA via WebSocket and wait for completion.
 
@@ -31,6 +169,8 @@ async def send_task_to_cua(
         model_id: The model ID to use for the task
         cua_ws_url: The WebSocket URL for CUA backend
         timeout_seconds: Maximum time to wait for task completion
+        workspace_id: Optional workspace ID to persist task in database
+        conversation_id: Optional conversation ID to link task to a conversation
 
     Returns:
         Dictionary with status and result information:
@@ -38,6 +178,7 @@ async def send_task_to_cua(
             "status": "success" | "error" | "timeout",
             "final_state": "success" | "error" | ...,
             "trace_id": str,
+            "task_id": str (if workspace_id provided),
             "message": str,
             "error": str (if status is "error")
         }
@@ -46,6 +187,11 @@ async def send_task_to_cua(
         CUAClientError: If connection or communication fails
     """
     task_start_time = datetime.now(timezone.utc)
+
+    # Initialize persistence layer if workspace_id is provided
+    persistence: CuaTaskPersistence | None = None
+    if workspace_id:
+        persistence = CuaTaskPersistence(workspace_id, conversation_id)
 
     try:
         async with websockets.connect(cua_ws_url) as websocket:
@@ -116,6 +262,11 @@ async def send_task_to_cua(
             await websocket.send(json.dumps(trace_message))
             logger.info("Message sent to CUA WebSocket successfully")
 
+            # Create persistent task record if workspace_id was provided
+            task_id: UUID | None = None
+            if persistence:
+                task_id = await persistence.create_task(trace_id, instruction, model_id)
+
             # Wait for completion events
             final_state = None
             final_message = None
@@ -156,7 +307,7 @@ async def send_task_to_cua(
 
             try:
                 # Use wait_for for timeout (compatible with Python 3.11+)
-                async def wait_for_completion():
+                async def wait_for_completion() -> None:
                     nonlocal \
                         final_state, \
                         final_message, \
@@ -177,8 +328,14 @@ async def send_task_to_cua(
                             agent_step = event_data.get("agentStep") or event_data.get(
                                 "step"
                             )
+                            trace_metadata = event_data.get("traceMetadata", {})
                             if agent_step:
                                 steps.append(agent_step)
+                                # Persist step if persistence is enabled
+                                if persistence:
+                                    await persistence.add_step(
+                                        agent_step, trace_metadata
+                                    )
                                 # Log if we found a final_answer in this step
                                 if isinstance(agent_step, dict):
                                     actions = agent_step.get("actions", [])
@@ -239,19 +396,25 @@ async def send_task_to_cua(
                 await asyncio.wait_for(wait_for_completion(), timeout=timeout_seconds)
             except asyncio.TimeoutError:
                 logger.error(f"Task timeout after {timeout_seconds} seconds")
+                if persistence:
+                    await persistence.mark_timeout()
                 return {
                     "status": "timeout",
                     "final_state": None,
                     "trace_id": trace_id,
+                    "task_id": str(task_id) if task_id else None,
                     "message": f"Task timed out after {timeout_seconds} seconds",
                     "error": "timeout",
                 }
 
             if error_message:
+                if persistence:
+                    await persistence.mark_error(error_message)
                 return {
                     "status": "error",
                     "final_state": "error",
                     "trace_id": trace_id,
+                    "task_id": str(task_id) if task_id else None,
                     "message": f"Task failed: {error_message}",
                     "error": error_message,
                     "agent_final_answer": agent_final_answer,
@@ -281,10 +444,13 @@ async def send_task_to_cua(
                     )
 
             if final_state == "success" and is_actually_success:
+                if persistence:
+                    await persistence.complete_task("success")
                 return {
                     "status": "success",
                     "final_state": final_state,
                     "trace_id": trace_id,
+                    "task_id": str(task_id) if task_id else None,
                     "message": final_message or "Task completed successfully",
                     "error": None,
                     "agent_final_answer": agent_final_answer,
@@ -296,10 +462,15 @@ async def send_task_to_cua(
                     or final_message
                     or "Task did not complete successfully"
                 )
+                if persistence:
+                    await persistence.complete_task(
+                        final_state or "error", failure_message
+                    )
                 return {
                     "status": "failed",
                     "final_state": final_state or "unknown",
                     "trace_id": trace_id,
+                    "task_id": str(task_id) if task_id else None,
                     "message": failure_message,
                     "error": agent_final_answer or final_state or "unknown_error",
                     "agent_final_answer": agent_final_answer,
@@ -308,12 +479,18 @@ async def send_task_to_cua(
     except ConnectionClosed as e:
         error_msg = f"WebSocket connection closed: {e}"
         logger.error(error_msg)
+        if persistence:
+            await persistence.mark_error(error_msg)
         raise CUAClientError(error_msg) from e
     except WebSocketException as e:
         error_msg = f"WebSocket error: {e}"
         logger.error(error_msg)
+        if persistence:
+            await persistence.mark_error(error_msg)
         raise CUAClientError(error_msg) from e
     except Exception as e:
         error_msg = f"Unexpected error communicating with CUA: {e}"
         logger.exception(error_msg)
+        if persistence:
+            await persistence.mark_error(error_msg)
         raise CUAClientError(error_msg) from e

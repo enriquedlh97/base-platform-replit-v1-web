@@ -481,6 +481,160 @@ export type CreatePublicConversationResponse = {
 };
 
 /**
+ * CuaTaskPublic
+ *
+ * Properties to return via API for CUA tasks
+ */
+export type CuaTaskPublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Workspace Id
+     */
+    workspace_id: string;
+    /**
+     * Conversation Id
+     */
+    conversation_id?: string | null;
+    /**
+     * Trace Id
+     */
+    trace_id: string;
+    /**
+     * Instruction
+     */
+    instruction: string;
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Model Id
+     */
+    model_id: string;
+    /**
+     * Final State
+     */
+    final_state?: string | null;
+    /**
+     * Error Message
+     */
+    error_message?: string | null;
+    /**
+     * Steps
+     */
+    steps?: Array<{
+        [key: string]: unknown;
+    }>;
+    /**
+     * Task Metadata
+     */
+    task_metadata?: {
+        [key: string]: unknown;
+    };
+    /**
+     * Started At
+     */
+    started_at: string;
+    /**
+     * Completed At
+     */
+    completed_at?: string | null;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+};
+
+/**
+ * CuaTaskSummary
+ *
+ * Summary view for task list (without full step data)
+ */
+export type CuaTaskSummary = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Workspace Id
+     */
+    workspace_id: string;
+    /**
+     * Conversation Id
+     */
+    conversation_id?: string | null;
+    /**
+     * Trace Id
+     */
+    trace_id: string;
+    /**
+     * Instruction
+     */
+    instruction: string;
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Model Id
+     */
+    model_id: string;
+    /**
+     * Final State
+     */
+    final_state?: string | null;
+    /**
+     * Error Message
+     */
+    error_message?: string | null;
+    /**
+     * Step Count
+     */
+    step_count?: number;
+    /**
+     * Task Metadata
+     */
+    task_metadata?: {
+        [key: string]: unknown;
+    };
+    /**
+     * Started At
+     */
+    started_at: string;
+    /**
+     * Completed At
+     */
+    completed_at?: string | null;
+    /**
+     * Created At
+     */
+    created_at: string;
+};
+
+/**
+ * CuaTasksPublic
+ *
+ * Paginated list of CUA tasks
+ */
+export type CuaTasksPublic = {
+    /**
+     * Data
+     */
+    data: Array<CuaTaskSummary>;
+    /**
+     * Count
+     */
+    count: number;
+};
+
+/**
  * EventCreate
  */
 export type EventCreate = {
@@ -3789,6 +3943,152 @@ export type PublicStreamPublicConversationError = PublicStreamPublicConversation
 
 export type PublicStreamPublicConversationResponses = {
     /**
+     * Successful Response
+     */
+    200: unknown;
+};
+
+export type CuaTasksListCuaTasksData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Status
+         *
+         * Filter by status (pending, running, completed, failed, stopped, timeout)
+         */
+        status?: string | null;
+        /**
+         * Skip
+         */
+        skip?: number;
+        /**
+         * Limit
+         */
+        limit?: number;
+    };
+    url: '/api/v1/cua-tasks/';
+};
+
+export type CuaTasksListCuaTasksErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CuaTasksListCuaTasksError = CuaTasksListCuaTasksErrors[keyof CuaTasksListCuaTasksErrors];
+
+export type CuaTasksListCuaTasksResponses = {
+    /**
+     * Successful Response
+     */
+    200: CuaTasksPublic;
+};
+
+export type CuaTasksListCuaTasksResponse = CuaTasksListCuaTasksResponses[keyof CuaTasksListCuaTasksResponses];
+
+export type CuaTasksListActiveCuaTasksData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/cua-tasks/active';
+};
+
+export type CuaTasksListActiveCuaTasksResponses = {
+    /**
+     * Successful Response
+     */
+    200: CuaTasksPublic;
+};
+
+export type CuaTasksListActiveCuaTasksResponse = CuaTasksListActiveCuaTasksResponses[keyof CuaTasksListActiveCuaTasksResponses];
+
+export type CuaTasksStopCuaTaskData = {
+    body?: never;
+    path: {
+        /**
+         * Task Id
+         */
+        task_id: string;
+    };
+    query?: never;
+    url: '/api/v1/cua-tasks/{task_id}';
+};
+
+export type CuaTasksStopCuaTaskErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CuaTasksStopCuaTaskError = CuaTasksStopCuaTaskErrors[keyof CuaTasksStopCuaTaskErrors];
+
+export type CuaTasksStopCuaTaskResponses = {
+    /**
+     * Response Cua-Tasks-Stop Cua Task
+     *
+     * Successful Response
+     */
+    200: unknown;
+};
+
+export type CuaTasksGetCuaTaskData = {
+    body?: never;
+    path: {
+        /**
+         * Task Id
+         */
+        task_id: string;
+    };
+    query?: never;
+    url: '/api/v1/cua-tasks/{task_id}';
+};
+
+export type CuaTasksGetCuaTaskErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CuaTasksGetCuaTaskError = CuaTasksGetCuaTaskErrors[keyof CuaTasksGetCuaTaskErrors];
+
+export type CuaTasksGetCuaTaskResponses = {
+    /**
+     * Successful Response
+     */
+    200: CuaTaskPublic;
+};
+
+export type CuaTasksGetCuaTaskResponse = CuaTasksGetCuaTaskResponses[keyof CuaTasksGetCuaTaskResponses];
+
+export type CuaTasksDeleteCuaTaskData = {
+    body?: never;
+    path: {
+        /**
+         * Task Id
+         */
+        task_id: string;
+    };
+    query?: never;
+    url: '/api/v1/cua-tasks/{task_id}/permanently';
+};
+
+export type CuaTasksDeleteCuaTaskErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CuaTasksDeleteCuaTaskError = CuaTasksDeleteCuaTaskErrors[keyof CuaTasksDeleteCuaTaskErrors];
+
+export type CuaTasksDeleteCuaTaskResponses = {
+    /**
+     * Response Cua-Tasks-Delete Cua Task
+     *
      * Successful Response
      */
     200: unknown;

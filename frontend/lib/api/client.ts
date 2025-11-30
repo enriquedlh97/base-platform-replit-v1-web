@@ -76,4 +76,5 @@ export {
   ConversationsService,
   SchedulingConnectorsService,
   WorkspaceServicesService,
+  CuaTasksService,
 } from "@/lib/api/generated";

@@ -5,6 +5,7 @@ from app.api.routes import (
     categories,
     clients,
     conversations,
+    cua_tasks,
     events,
     items,
     login,
@@ -43,6 +44,7 @@ api_router.include_router(scheduling_connectors.router)
 api_router.include_router(conversations.router)
 api_router.include_router(messages.router)
 api_router.include_router(public_conversations.router)
+api_router.include_router(cua_tasks.router)
 
 
 if settings.ENVIRONMENT == "local":
