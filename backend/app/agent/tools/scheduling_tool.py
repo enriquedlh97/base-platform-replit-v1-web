@@ -16,6 +16,7 @@ async def schedule_appointment_with_cua(
     date: str,
     time: str,
     calendly_url: str = "",
+    notes: str = "",
 ) -> str:
     """Schedule an appointment using the Calendly link.
 
@@ -38,6 +39,9 @@ async def schedule_appointment_with_cua(
     - date: The appointment date (e.g., "November 24, 2025" or "Nov 24, 2025")
     - time: The appointment time with timezone (e.g., "10:00 AM EST" or "2:00 PM Eastern Time")
     - calendly_url: The Calendly scheduling link (optional - will be provided automatically if not specified)
+    - notes: Optional brief summary of what the customer wants to discuss during the meeting
+      (e.g., "Interested in AI adoption for sales team", "Questions about enterprise pricing").
+      Leave empty if nothing specific was mentioned in the conversation.
 
     IMPORTANT: You do NOT need to ask the user for the Calendly link. It is automatically provided from the workspace settings.
     You only need to collect: name, email, date, and time from the user.
@@ -51,6 +55,7 @@ async def schedule_appointment_with_cua(
         date: Appointment date (e.g., "November 24, 2025")
         time: Appointment time with timezone (e.g., "10:00 AM EST")
         calendly_url: The Calendly scheduling link URL (optional - auto-provided)
+        notes: Brief summary of meeting topics or customer interests mentioned in conversation (optional)
 
     Returns:
         A message indicating success or failure of the scheduling operation
@@ -64,6 +69,7 @@ async def schedule_appointment_with_cua(
             "date": date,
             "time": time,
             "calendly_url": calendly_url,
+            "notes": notes,
         }
     )
 

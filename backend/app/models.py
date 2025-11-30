@@ -492,6 +492,10 @@ class WorkspaceBase(SQLModel):
     timezone: str = Field(max_length=100)
     is_active: bool = Field(default=True)
     knowledge_base: str | None = None
+    public_name: str | None = Field(default=None, max_length=255)
+    subtitle: str | None = Field(default=None, max_length=255)
+    description: str | None = None
+    profile_image_url: str | None = None
 
 
 class WorkspaceCreate(SQLModel):
@@ -514,6 +518,10 @@ class WorkspaceUpdate(SQLModel):
     timezone: str | None = Field(default=None, max_length=100)
     is_active: bool | None = None
     knowledge_base: str | None = None
+    public_name: str | None = Field(default=None, max_length=255)
+    subtitle: str | None = Field(default=None, max_length=255)
+    description: str | None = None
+    profile_image_url: str | None = None
 
 
 class Workspace(WorkspaceBase, table=True):
@@ -536,6 +544,9 @@ class Workspace(WorkspaceBase, table=True):
     conversations: list["Conversation"] = Relationship(
         back_populates="workspace", cascade_delete=True
     )
+    cua_tasks: list["CuaTask"] = Relationship(
+        back_populates="workspace", cascade_delete=True
+    )
 
 
 class WorkspacePublic(SQLModel):
@@ -548,6 +559,10 @@ class WorkspacePublic(SQLModel):
     timezone: str
     is_active: bool
     knowledge_base: str | None = None
+    public_name: str | None = None
+    subtitle: str | None = None
+    description: str | None = None
+    profile_image_url: str | None = None
     created_at: datetime
     updated_at: datetime
 
@@ -684,6 +699,9 @@ class Conversation(ConversationBase, table=True):
     messages: list["ConversationMessage"] = Relationship(
         back_populates="conversation", cascade_delete=True
     )
+    cua_tasks: list["CuaTask"] = Relationship(
+        back_populates="conversation", cascade_delete=False
+    )
 
 
 class ConversationPublic(SQLModel):
@@ -697,6 +715,49 @@ class ConversationPublic(SQLModel):
     tags: list[str] | None = None
     created_at: datetime
     updated_at: datetime
+
+
+class ConversationSummary(SQLModel):
+    """Conversation summary with message count and task count for list view."""
+
+    id: UUID
+    workspace_id: UUID
+    visitor_name: str | None = None
+    visitor_email: str | None = None
+    channel: str
+    status: str
+    human_time_saved_minutes: int | None = None
+    tags: list[str] | None = None
+    created_at: datetime
+    updated_at: datetime
+    message_count: int = 0
+    task_count: int = 0
+    last_message_content: str | None = None
+    last_message_role: str | None = None
+    last_message_at: datetime | None = None
+
+
+class ConversationsListPublic(SQLModel):
+    """Paginated list of conversations with summaries."""
+
+    data: list[ConversationSummary]
+    count: int
+
+
+class ConversationWithTasks(SQLModel):
+    """Conversation detail with associated tasks."""
+
+    id: UUID
+    workspace_id: UUID
+    visitor_name: str | None = None
+    visitor_email: str | None = None
+    channel: str
+    status: str
+    human_time_saved_minutes: int | None = None
+    tags: list[str] | None = None
+    created_at: datetime
+    updated_at: datetime
+    tasks: list["CuaTaskSummary"] = []
 
 
 class ConversationMessageBase(SQLModel):
@@ -730,3 +791,154 @@ class ConversationMessagePublic(SQLModel):
     role: str
     timestamp: datetime
     created_at: datetime
+
+
+# CUA Task Models - Tracks Computer Use Agent task executions
+class CuaTaskStatus(str):
+    """Status values for CUA tasks"""
+
+    PENDING = "pending"
+    RUNNING = "running"
+    COMPLETED = "completed"
+    FAILED = "failed"
+    STOPPED = "stopped"
+    TIMEOUT = "timeout"
+
+
+class CuaTaskStepData(BaseModel):
+    """Data structure for a single CUA task step (stored in JSON)"""
+
+    step_id: str
+    image: str | None = None  # Base64 encoded screenshot
+    thought: str | None = None
+    actions: list[dict[str, Any]] = []
+    error: str | None = None
+    duration: float = 0.0
+    input_tokens_used: int = 0
+    output_tokens_used: int = 0
+    step_evaluation: str = "neutral"
+
+
+class CuaTaskMetadataInfo(BaseModel):
+    """Metadata for CUA task execution (stored in JSON)"""
+
+    input_tokens_used: int = 0
+    output_tokens_used: int = 0
+    duration: float = 0.0
+    number_of_steps: int = 0
+    max_steps: int = 30
+
+
+class CuaTaskBase(SQLModel):
+    """Base model for CUA tasks"""
+
+    trace_id: str = Field(
+        max_length=100, index=True, description="CUA internal trace ID"
+    )
+    instruction: str = Field(description="Natural language instruction for the agent")
+    status: str = Field(
+        max_length=50, default=CuaTaskStatus.PENDING, description="Current task status"
+    )
+    model_id: str = Field(max_length=255, description="Model ID used for the task")
+    final_state: str | None = Field(
+        default=None,
+        max_length=50,
+        description="Final state from CUA (success, stopped, error, etc.)",
+    )
+    error_message: str | None = Field(
+        default=None, description="Error message if task failed"
+    )
+
+
+class CuaTaskCreate(SQLModel):
+    """Properties to receive via API on CUA task creation"""
+
+    instruction: str = Field(min_length=1, description="Natural language instruction")
+    model_id: str = Field(
+        default="Qwen/Qwen3-VL-30B-A3B-Instruct", max_length=255, description="Model ID"
+    )
+
+
+class CuaTaskUpdate(SQLModel):
+    """Properties to receive via API on CUA task update"""
+
+    status: str | None = Field(default=None, max_length=50)
+    final_state: str | None = Field(default=None, max_length=50)
+    error_message: str | None = None
+
+
+class CuaTask(CuaTaskBase, table=True):
+    """Database model for CUA tasks"""
+
+    __tablename__ = "cua_tasks"
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+    workspace_id: UUID = Field(
+        foreign_key="workspaces.id", ondelete="CASCADE", index=True
+    )
+    conversation_id: UUID | None = Field(
+        default=None, foreign_key="conversations.id", ondelete="SET NULL", index=True
+    )
+    steps: list[dict[str, Any]] = Field(
+        default_factory=list,
+        sa_column=Column(JSON, nullable=False, default=[]),
+        description="Array of step data",
+    )
+    task_metadata: dict[str, Any] = Field(
+        default_factory=dict,
+        sa_column=Column(JSON, nullable=False, default={}),
+        description="Task metadata (tokens, duration, etc.)",
+    )
+    started_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    completed_at: datetime | None = Field(default=None)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+    # Relationships
+    workspace: "Workspace" = Relationship(back_populates="cua_tasks")
+    conversation: "Conversation" = Relationship(back_populates="cua_tasks")
+
+
+class CuaTaskPublic(SQLModel):
+    """Properties to return via API for CUA tasks"""
+
+    id: UUID
+    workspace_id: UUID
+    conversation_id: UUID | None = None
+    trace_id: str
+    instruction: str
+    status: str
+    model_id: str
+    final_state: str | None = None
+    error_message: str | None = None
+    steps: list[dict[str, Any]] = []
+    task_metadata: dict[str, Any] = {}
+    started_at: datetime
+    completed_at: datetime | None = None
+    created_at: datetime
+    updated_at: datetime
+
+
+class CuaTaskSummary(SQLModel):
+    """Summary view for task list (without full step data)"""
+
+    id: UUID
+    workspace_id: UUID
+    conversation_id: UUID | None = None
+    trace_id: str
+    instruction: str
+    status: str
+    model_id: str
+    final_state: str | None = None
+    error_message: str | None = None
+    step_count: int = 0
+    task_metadata: dict[str, Any] = {}
+    started_at: datetime
+    completed_at: datetime | None = None
+    created_at: datetime
+
+
+class CuaTasksPublic(SQLModel):
+    """Paginated list of CUA tasks"""
+
+    data: list[CuaTaskSummary]
+    count: int

@@ -4,6 +4,7 @@ import type {
   WorkspaceCreate,
   WorkspaceUpdate,
 } from "@/lib/api/generated/types.gen";
+import { env } from "@/lib/env";
 
 /**
  * Workspace API Hooks
@@ -99,6 +100,60 @@ export function useDeleteWorkspace() {
         path: { workspace_id: workspaceId },
       });
       return workspaceId;
+    },
+    onSuccess: () => {
+      // Invalidate workspace to refetch
+      queryClient.invalidateQueries({ queryKey: ["workspace"] });
+    },
+  });
+}
+
+/**
+ * Upload workspace profile image
+ */
+export function useUploadWorkspaceProfileImage(workspaceId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (file: File) => {
+      // Create FormData
+      const formData = new FormData();
+      formData.append("profile_image", file);
+
+      // Get API base URL
+      const baseUrl = env.NEXT_PUBLIC_API_URL.replace(/\/$/, "");
+      const apiBase = baseUrl.endsWith("/api/v1")
+        ? baseUrl
+        : `${baseUrl}/api/v1`;
+
+      // Get auth token from Supabase session
+      const { createClient } = await import("@/lib/supabase/client");
+      const supabase = createClient();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+
+      if (!session?.access_token) {
+        throw new Error("Not authenticated");
+      }
+
+      const response = await fetch(
+        `${apiBase}/workspaces/${workspaceId}/profile-image`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+          },
+          body: formData,
+        }
+      );
+
+      if (!response.ok) {
+        const text = await response.text();
+        throw new Error(text || `Upload failed with ${response.status}`);
+      }
+
+      return await response.json();
     },
     onSuccess: () => {
       // Invalidate workspace to refetch

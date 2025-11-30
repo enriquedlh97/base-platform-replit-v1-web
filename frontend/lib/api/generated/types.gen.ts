@@ -201,6 +201,16 @@ export type BodyUsersUploadAvatarMe = {
 };
 
 /**
+ * Body_workspaces-upload_workspace_profile_image
+ */
+export type BodyWorkspacesUploadWorkspaceProfileImage = {
+    /**
+     * Profile Image
+     */
+    profile_image: Blob | File;
+};
+
+/**
  * CategoryPublic
  */
 export type CategoryPublic = {
@@ -413,6 +423,74 @@ export type ConversationPublic = {
 };
 
 /**
+ * ConversationSummary
+ *
+ * Conversation summary with message count and task count for list view.
+ */
+export type ConversationSummary = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Workspace Id
+     */
+    workspace_id: string;
+    /**
+     * Visitor Name
+     */
+    visitor_name?: string | null;
+    /**
+     * Visitor Email
+     */
+    visitor_email?: string | null;
+    /**
+     * Channel
+     */
+    channel: string;
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Human Time Saved Minutes
+     */
+    human_time_saved_minutes?: number | null;
+    /**
+     * Tags
+     */
+    tags?: Array<string> | null;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+    /**
+     * Message Count
+     */
+    message_count?: number;
+    /**
+     * Task Count
+     */
+    task_count?: number;
+    /**
+     * Last Message Content
+     */
+    last_message_content?: string | null;
+    /**
+     * Last Message Role
+     */
+    last_message_role?: string | null;
+    /**
+     * Last Message At
+     */
+    last_message_at?: string | null;
+};
+
+/**
  * ConversationUpdate
  */
 export type ConversationUpdate = {
@@ -440,6 +518,256 @@ export type ConversationUpdate = {
      * Tags
      */
     tags?: Array<string> | null;
+};
+
+/**
+ * ConversationWithTasks
+ *
+ * Conversation detail with associated tasks.
+ */
+export type ConversationWithTasks = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Workspace Id
+     */
+    workspace_id: string;
+    /**
+     * Visitor Name
+     */
+    visitor_name?: string | null;
+    /**
+     * Visitor Email
+     */
+    visitor_email?: string | null;
+    /**
+     * Channel
+     */
+    channel: string;
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Human Time Saved Minutes
+     */
+    human_time_saved_minutes?: number | null;
+    /**
+     * Tags
+     */
+    tags?: Array<string> | null;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+    /**
+     * Tasks
+     */
+    tasks?: Array<CuaTaskSummary>;
+};
+
+/**
+ * ConversationsListPublic
+ *
+ * Paginated list of conversations with summaries.
+ */
+export type ConversationsListPublic = {
+    /**
+     * Data
+     */
+    data: Array<ConversationSummary>;
+    /**
+     * Count
+     */
+    count: number;
+};
+
+/**
+ * CreatePublicConversationRequest
+ */
+export type CreatePublicConversationRequest = {
+    /**
+     * Workspace Handle
+     */
+    workspace_handle: string;
+    /**
+     * Idempotency Key
+     */
+    idempotency_key?: string | null;
+};
+
+/**
+ * CreatePublicConversationResponse
+ */
+export type CreatePublicConversationResponse = {
+    /**
+     * Conversation Id
+     */
+    conversation_id: string;
+    /**
+     * Created At
+     */
+    created_at: string;
+};
+
+/**
+ * CuaTaskPublic
+ *
+ * Properties to return via API for CUA tasks
+ */
+export type CuaTaskPublic = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Workspace Id
+     */
+    workspace_id: string;
+    /**
+     * Conversation Id
+     */
+    conversation_id?: string | null;
+    /**
+     * Trace Id
+     */
+    trace_id: string;
+    /**
+     * Instruction
+     */
+    instruction: string;
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Model Id
+     */
+    model_id: string;
+    /**
+     * Final State
+     */
+    final_state?: string | null;
+    /**
+     * Error Message
+     */
+    error_message?: string | null;
+    /**
+     * Steps
+     */
+    steps?: Array<{
+        [key: string]: unknown;
+    }>;
+    /**
+     * Task Metadata
+     */
+    task_metadata?: {
+        [key: string]: unknown;
+    };
+    /**
+     * Started At
+     */
+    started_at: string;
+    /**
+     * Completed At
+     */
+    completed_at?: string | null;
+    /**
+     * Created At
+     */
+    created_at: string;
+    /**
+     * Updated At
+     */
+    updated_at: string;
+};
+
+/**
+ * CuaTaskSummary
+ *
+ * Summary view for task list (without full step data)
+ */
+export type CuaTaskSummary = {
+    /**
+     * Id
+     */
+    id: string;
+    /**
+     * Workspace Id
+     */
+    workspace_id: string;
+    /**
+     * Conversation Id
+     */
+    conversation_id?: string | null;
+    /**
+     * Trace Id
+     */
+    trace_id: string;
+    /**
+     * Instruction
+     */
+    instruction: string;
+    /**
+     * Status
+     */
+    status: string;
+    /**
+     * Model Id
+     */
+    model_id: string;
+    /**
+     * Final State
+     */
+    final_state?: string | null;
+    /**
+     * Error Message
+     */
+    error_message?: string | null;
+    /**
+     * Step Count
+     */
+    step_count?: number;
+    /**
+     * Task Metadata
+     */
+    task_metadata?: {
+        [key: string]: unknown;
+    };
+    /**
+     * Started At
+     */
+    started_at: string;
+    /**
+     * Completed At
+     */
+    completed_at?: string | null;
+    /**
+     * Created At
+     */
+    created_at: string;
+};
+
+/**
+ * CuaTasksPublic
+ *
+ * Paginated list of CUA tasks
+ */
+export type CuaTasksPublic = {
+    /**
+     * Data
+     */
+    data: Array<CuaTaskSummary>;
+    /**
+     * Count
+     */
+    count: number;
 };
 
 /**
@@ -585,6 +913,20 @@ export type ItemsPublic = {
 };
 
 /**
+ * ListMessagesResponse
+ */
+export type ListMessagesResponse = {
+    /**
+     * Messages
+     */
+    messages: Array<ConversationMessagePublic>;
+    /**
+     * Next Since
+     */
+    next_since: string | null;
+};
+
+/**
  * Message
  */
 export type Message = {
@@ -635,6 +977,24 @@ export type PostPublic = {
      */
     category_name?: string | null;
     author?: UserPublic | null;
+};
+
+/**
+ * PostPublicMessageRequest
+ */
+export type PostPublicMessageRequest = {
+    /**
+     * Role
+     */
+    role: string;
+    /**
+     * Content
+     */
+    content: string;
+    /**
+     * Idempotency Key
+     */
+    idempotency_key?: string | null;
 };
 
 /**
@@ -1332,6 +1692,34 @@ export type WorkspaceCreate = {
 };
 
 /**
+ * WorkspaceProfilePublic
+ *
+ * Public workspace profile information for display on public chat page.
+ */
+export type WorkspaceProfilePublic = {
+    /**
+     * Handle
+     */
+    handle: string;
+    /**
+     * Public Name
+     */
+    public_name: string | null;
+    /**
+     * Subtitle
+     */
+    subtitle: string | null;
+    /**
+     * Description
+     */
+    description: string | null;
+    /**
+     * Profile Image Url
+     */
+    profile_image_url: string | null;
+};
+
+/**
  * WorkspacePublic
  */
 export type WorkspacePublic = {
@@ -1371,6 +1759,22 @@ export type WorkspacePublic = {
      * Knowledge Base
      */
     knowledge_base?: string | null;
+    /**
+     * Public Name
+     */
+    public_name?: string | null;
+    /**
+     * Subtitle
+     */
+    subtitle?: string | null;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Profile Image Url
+     */
+    profile_image_url?: string | null;
     /**
      * Created At
      */
@@ -1531,6 +1935,22 @@ export type WorkspaceUpdate = {
      * Knowledge Base
      */
     knowledge_base?: string | null;
+    /**
+     * Public Name
+     */
+    public_name?: string | null;
+    /**
+     * Subtitle
+     */
+    subtitle?: string | null;
+    /**
+     * Description
+     */
+    description?: string | null;
+    /**
+     * Profile Image Url
+     */
+    profile_image_url?: string | null;
 };
 
 export type LoginTestTokenData = {
@@ -2773,6 +3193,36 @@ export type WorkspacesUpdateWorkspaceResponses = {
 
 export type WorkspacesUpdateWorkspaceResponse = WorkspacesUpdateWorkspaceResponses[keyof WorkspacesUpdateWorkspaceResponses];
 
+export type WorkspacesUploadWorkspaceProfileImageData = {
+    body: BodyWorkspacesUploadWorkspaceProfileImage;
+    path: {
+        /**
+         * Workspace Id
+         */
+        workspace_id: string;
+    };
+    query?: never;
+    url: '/api/v1/workspaces/{workspace_id}/profile-image';
+};
+
+export type WorkspacesUploadWorkspaceProfileImageErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type WorkspacesUploadWorkspaceProfileImageError = WorkspacesUploadWorkspaceProfileImageErrors[keyof WorkspacesUploadWorkspaceProfileImageErrors];
+
+export type WorkspacesUploadWorkspaceProfileImageResponses = {
+    /**
+     * Successful Response
+     */
+    200: WorkspacePublic;
+};
+
+export type WorkspacesUploadWorkspaceProfileImageResponse = WorkspacesUploadWorkspaceProfileImageResponses[keyof WorkspacesUploadWorkspaceProfileImageResponses];
+
 export type WorkspaceServicesGetWorkspaceServicesData = {
     body?: never;
     path: {
@@ -3199,6 +3649,51 @@ export type ConversationsCreateConversationResponses = {
 
 export type ConversationsCreateConversationResponse = ConversationsCreateConversationResponses[keyof ConversationsCreateConversationResponses];
 
+export type ConversationsGetWorkspaceConversationsWithSummariesData = {
+    body?: never;
+    path: {
+        /**
+         * Workspace Id
+         */
+        workspace_id: string;
+    };
+    query?: {
+        /**
+         * Status
+         *
+         * Filter by status
+         */
+        status?: string | null;
+        /**
+         * Skip
+         */
+        skip?: number;
+        /**
+         * Limit
+         */
+        limit?: number;
+    };
+    url: '/api/v1/conversations/workspaces/{workspace_id}/summaries';
+};
+
+export type ConversationsGetWorkspaceConversationsWithSummariesErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ConversationsGetWorkspaceConversationsWithSummariesError = ConversationsGetWorkspaceConversationsWithSummariesErrors[keyof ConversationsGetWorkspaceConversationsWithSummariesErrors];
+
+export type ConversationsGetWorkspaceConversationsWithSummariesResponses = {
+    /**
+     * Successful Response
+     */
+    200: ConversationsListPublic;
+};
+
+export type ConversationsGetWorkspaceConversationsWithSummariesResponse = ConversationsGetWorkspaceConversationsWithSummariesResponses[keyof ConversationsGetWorkspaceConversationsWithSummariesResponses];
+
 export type ConversationsDeleteConversationData = {
     body?: never;
     path: {
@@ -3288,6 +3783,36 @@ export type ConversationsUpdateConversationResponses = {
 };
 
 export type ConversationsUpdateConversationResponse = ConversationsUpdateConversationResponses[keyof ConversationsUpdateConversationResponses];
+
+export type ConversationsGetConversationWithTasksData = {
+    body?: never;
+    path: {
+        /**
+         * Conversation Id
+         */
+        conversation_id: string;
+    };
+    query?: never;
+    url: '/api/v1/conversations/{conversation_id}/with-tasks';
+};
+
+export type ConversationsGetConversationWithTasksErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type ConversationsGetConversationWithTasksError = ConversationsGetConversationWithTasksErrors[keyof ConversationsGetConversationWithTasksErrors];
+
+export type ConversationsGetConversationWithTasksResponses = {
+    /**
+     * Successful Response
+     */
+    200: ConversationWithTasks;
+};
+
+export type ConversationsGetConversationWithTasksResponse = ConversationsGetConversationWithTasksResponses[keyof ConversationsGetConversationWithTasksResponses];
 
 export type ConversationsGetConversationMessagesData = {
     body?: never;
@@ -3472,6 +3997,313 @@ export type MessagesGetMessageResponses = {
 };
 
 export type MessagesGetMessageResponse = MessagesGetMessageResponses[keyof MessagesGetMessageResponses];
+
+export type PublicGetWorkspaceProfileData = {
+    body?: never;
+    path: {
+        /**
+         * Workspace Handle
+         */
+        workspace_handle: string;
+    };
+    query?: never;
+    url: '/api/v1/public/workspaces/{workspace_handle}';
+};
+
+export type PublicGetWorkspaceProfileErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type PublicGetWorkspaceProfileError = PublicGetWorkspaceProfileErrors[keyof PublicGetWorkspaceProfileErrors];
+
+export type PublicGetWorkspaceProfileResponses = {
+    /**
+     * Successful Response
+     */
+    200: WorkspaceProfilePublic;
+};
+
+export type PublicGetWorkspaceProfileResponse = PublicGetWorkspaceProfileResponses[keyof PublicGetWorkspaceProfileResponses];
+
+export type PublicCreatePublicConversationData = {
+    body: CreatePublicConversationRequest;
+    path?: never;
+    query?: never;
+    url: '/api/v1/public/conversations';
+};
+
+export type PublicCreatePublicConversationErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type PublicCreatePublicConversationError = PublicCreatePublicConversationErrors[keyof PublicCreatePublicConversationErrors];
+
+export type PublicCreatePublicConversationResponses = {
+    /**
+     * Successful Response
+     */
+    200: CreatePublicConversationResponse;
+};
+
+export type PublicCreatePublicConversationResponse = PublicCreatePublicConversationResponses[keyof PublicCreatePublicConversationResponses];
+
+export type PublicListPublicMessagesData = {
+    body?: never;
+    path: {
+        /**
+         * Conversation Id
+         */
+        conversation_id: string;
+    };
+    query?: {
+        /**
+         *  Since
+         */
+        _since?: string | null;
+        /**
+         * Limit
+         */
+        limit?: number;
+    };
+    url: '/api/v1/public/conversations/{conversation_id}/messages';
+};
+
+export type PublicListPublicMessagesErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type PublicListPublicMessagesError = PublicListPublicMessagesErrors[keyof PublicListPublicMessagesErrors];
+
+export type PublicListPublicMessagesResponses = {
+    /**
+     * Successful Response
+     */
+    200: ListMessagesResponse;
+};
+
+export type PublicListPublicMessagesResponse = PublicListPublicMessagesResponses[keyof PublicListPublicMessagesResponses];
+
+export type PublicPostPublicMessageData = {
+    body: PostPublicMessageRequest;
+    path: {
+        /**
+         * Conversation Id
+         */
+        conversation_id: string;
+    };
+    query?: never;
+    url: '/api/v1/public/conversations/{conversation_id}/messages';
+};
+
+export type PublicPostPublicMessageErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type PublicPostPublicMessageError = PublicPostPublicMessageErrors[keyof PublicPostPublicMessageErrors];
+
+export type PublicPostPublicMessageResponses = {
+    /**
+     * Successful Response
+     */
+    200: ConversationMessagePublic;
+};
+
+export type PublicPostPublicMessageResponse = PublicPostPublicMessageResponses[keyof PublicPostPublicMessageResponses];
+
+export type PublicStreamPublicConversationData = {
+    body?: never;
+    path: {
+        /**
+         * Conversation Id
+         */
+        conversation_id: string;
+    };
+    query?: {
+        /**
+         *  Since
+         */
+        _since?: string | null;
+        /**
+         * Request Id
+         */
+        request_id?: string | null;
+    };
+    url: '/api/v1/public/conversations/{conversation_id}/stream';
+};
+
+export type PublicStreamPublicConversationErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type PublicStreamPublicConversationError = PublicStreamPublicConversationErrors[keyof PublicStreamPublicConversationErrors];
+
+export type PublicStreamPublicConversationResponses = {
+    /**
+     * Successful Response
+     */
+    200: unknown;
+};
+
+export type CuaTasksListCuaTasksData = {
+    body?: never;
+    path?: never;
+    query?: {
+        /**
+         * Status
+         *
+         * Filter by status (pending, running, completed, failed, stopped, timeout)
+         */
+        status?: string | null;
+        /**
+         * Skip
+         */
+        skip?: number;
+        /**
+         * Limit
+         */
+        limit?: number;
+    };
+    url: '/api/v1/cua-tasks/';
+};
+
+export type CuaTasksListCuaTasksErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CuaTasksListCuaTasksError = CuaTasksListCuaTasksErrors[keyof CuaTasksListCuaTasksErrors];
+
+export type CuaTasksListCuaTasksResponses = {
+    /**
+     * Successful Response
+     */
+    200: CuaTasksPublic;
+};
+
+export type CuaTasksListCuaTasksResponse = CuaTasksListCuaTasksResponses[keyof CuaTasksListCuaTasksResponses];
+
+export type CuaTasksListActiveCuaTasksData = {
+    body?: never;
+    path?: never;
+    query?: never;
+    url: '/api/v1/cua-tasks/active';
+};
+
+export type CuaTasksListActiveCuaTasksResponses = {
+    /**
+     * Successful Response
+     */
+    200: CuaTasksPublic;
+};
+
+export type CuaTasksListActiveCuaTasksResponse = CuaTasksListActiveCuaTasksResponses[keyof CuaTasksListActiveCuaTasksResponses];
+
+export type CuaTasksStopCuaTaskData = {
+    body?: never;
+    path: {
+        /**
+         * Task Id
+         */
+        task_id: string;
+    };
+    query?: never;
+    url: '/api/v1/cua-tasks/{task_id}';
+};
+
+export type CuaTasksStopCuaTaskErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CuaTasksStopCuaTaskError = CuaTasksStopCuaTaskErrors[keyof CuaTasksStopCuaTaskErrors];
+
+export type CuaTasksStopCuaTaskResponses = {
+    /**
+     * Response Cua-Tasks-Stop Cua Task
+     *
+     * Successful Response
+     */
+    200: unknown;
+};
+
+export type CuaTasksGetCuaTaskData = {
+    body?: never;
+    path: {
+        /**
+         * Task Id
+         */
+        task_id: string;
+    };
+    query?: never;
+    url: '/api/v1/cua-tasks/{task_id}';
+};
+
+export type CuaTasksGetCuaTaskErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CuaTasksGetCuaTaskError = CuaTasksGetCuaTaskErrors[keyof CuaTasksGetCuaTaskErrors];
+
+export type CuaTasksGetCuaTaskResponses = {
+    /**
+     * Successful Response
+     */
+    200: CuaTaskPublic;
+};
+
+export type CuaTasksGetCuaTaskResponse = CuaTasksGetCuaTaskResponses[keyof CuaTasksGetCuaTaskResponses];
+
+export type CuaTasksDeleteCuaTaskData = {
+    body?: never;
+    path: {
+        /**
+         * Task Id
+         */
+        task_id: string;
+    };
+    query?: never;
+    url: '/api/v1/cua-tasks/{task_id}/permanently';
+};
+
+export type CuaTasksDeleteCuaTaskErrors = {
+    /**
+     * Validation Error
+     */
+    422: HttpValidationError;
+};
+
+export type CuaTasksDeleteCuaTaskError = CuaTasksDeleteCuaTaskErrors[keyof CuaTasksDeleteCuaTaskErrors];
+
+export type CuaTasksDeleteCuaTaskResponses = {
+    /**
+     * Response Cua-Tasks-Delete Cua Task
+     *
+     * Successful Response
+     */
+    200: unknown;
+};
 
 export type PrivateCreateUserData = {
     body: PrivateUserCreate;

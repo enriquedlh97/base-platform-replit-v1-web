@@ -118,7 +118,7 @@ const navigationData = {
   navSecondary: [
     {
       title: "Settings",
-      url: "#",
+      url: "/settings",
       icon: IconSettings,
     },
     {
@@ -133,6 +133,16 @@ const navigationData = {
     },
   ],
   documents: [
+    {
+      name: "Conversations",
+      url: "/conversations",
+      icon: IconMessageCircle,
+    },
+    {
+      name: "Tasks",
+      url: "/tasks",
+      icon: IconClock,
+    },
     {
       name: "Knowledge Base",
       url: "/knowledge-base",

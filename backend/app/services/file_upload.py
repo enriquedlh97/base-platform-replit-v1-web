@@ -185,3 +185,61 @@ class FileUploadService:
         return await FileUploadService.upload_to_storage(
             file_content, bucket_name, filename, content_type
         )
+
+    @staticmethod
+    async def upload_image_for_workspace(
+        file: UploadFile,
+        workspace_id: UUID,
+        bucket_name: str,
+        max_size_mb: int = MAX_IMAGE_MB,
+    ) -> str:
+        """
+        Complete image upload flow for a workspace.
+
+        This method handles the entire upload process: validation, filename generation,
+        upload to storage, and returns the public URL.
+
+        Args:
+            file: The uploaded file
+            workspace_id: ID of the workspace uploading the file
+            bucket_name: Name of the storage bucket
+            max_size_mb: Maximum file size in megabytes
+
+        Returns:
+            Public URL of the uploaded file
+        """
+        # Validate the file (content-type)
+        FileUploadService.validate_image_file(file)
+
+        # Read file content and enforce size
+        file_content: bytes = await file.read()
+        max_size_bytes: int = max_size_mb * 1024 * 1024
+        if len(file_content) > max_size_bytes:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Image file size must be less than {max_size_mb}MB",
+            )
+
+        # Generate unique filename using workspace_id
+        file_extension: str = os.path.splitext(file.filename or "file.jpg")[1]
+        filename: str = f"workspaces/{workspace_id}/{uuid4()}{file_extension}"
+
+        # Choose a safe content type
+        content_type: str = (
+            file.content_type
+            if file.content_type in ALLOWED_IMAGE_CONTENT_TYPES
+            else "image/jpeg"
+        )
+
+        # Log upload attempt (no PII)
+        logger.info(
+            "upload_image_for_workspace: workspace=%s type=%s size_bytes=%s path=%s",
+            workspace_id,
+            content_type,
+            len(file_content),
+            filename,
+        )
+
+        return await FileUploadService.upload_to_storage(
+            file_content, bucket_name, filename, content_type
+        )

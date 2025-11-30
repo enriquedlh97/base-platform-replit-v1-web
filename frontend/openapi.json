@@ -1438,7 +1438,7 @@
       "get": {
         "tags": ["workspaces"],
         "summary": "Get My Workspace",
-        "description": "Get current user's workspace.",
+        "description": "Get current user's workspace. Auto-creates one if it doesn't exist.\nThis ensures users can immediately access features like the knowledge base\nwithout requiring a setup wizard.",
         "operationId": "workspaces-get_my_workspace",
         "responses": {
           "200": {
@@ -1560,6 +1560,55 @@
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/Message" }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/workspaces/{workspace_id}/profile-image": {
+      "post": {
+        "tags": ["workspaces"],
+        "summary": "Upload Workspace Profile Image",
+        "description": "Upload profile image for a workspace.\n\nThe image will be uploaded to Supabase Storage in the 'workspace-profiles' bucket\nand the workspace's profile_image_url will be updated in the database.\n\nExpected: multipart/form-data with 'profile_image' field containing the image file.\nMax size: 5MB. Allowed types: image/jpeg, image/png, image/webp.",
+        "operationId": "workspaces-upload_workspace_profile_image",
+        "security": [{ "SupabaseBearer": [] }],
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Workspace Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_workspaces-upload_workspace_profile_image"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/WorkspacePublic" }
               }
             }
           },
@@ -2188,6 +2237,81 @@
         }
       }
     },
+    "/api/v1/conversations/workspaces/{workspace_id}/summaries": {
+      "get": {
+        "tags": ["conversations"],
+        "summary": "Get Workspace Conversations With Summaries",
+        "description": "Get conversations for a workspace with message and task counts.\n\nReturns a list of conversations with summary information including:\n- Message count\n- Task count\n- Last message preview",
+        "operationId": "conversations-get_workspace_conversations_with_summaries",
+        "security": [{ "SupabaseBearer": [] }],
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Workspace Id"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "description": "Filter by status",
+              "title": "Status"
+            },
+            "description": "Filter by status"
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationsListPublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/conversations/{conversation_id}": {
       "get": {
         "tags": ["conversations"],
@@ -2295,6 +2419,47 @@
             "content": {
               "application/json": {
                 "schema": { "$ref": "#/components/schemas/Message" }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/conversations/{conversation_id}/with-tasks": {
+      "get": {
+        "tags": ["conversations"],
+        "summary": "Get Conversation With Tasks",
+        "description": "Get a conversation with its associated CUA tasks.",
+        "operationId": "conversations-get_conversation_with_tasks",
+        "security": [{ "SupabaseBearer": [] }],
+        "parameters": [
+          {
+            "name": "conversation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Conversation Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationWithTasks"
+                }
               }
             }
           },
@@ -2575,6 +2740,425 @@
         }
       }
     },
+    "/api/v1/public/workspaces/{workspace_handle}": {
+      "get": {
+        "tags": ["public"],
+        "summary": "Get Workspace Profile",
+        "description": "Get public workspace profile by handle.\n\nReturns public profile information (name, subtitle, description, profile image)\nfor display on the public chat page. No authentication required.",
+        "operationId": "public-get_workspace_profile",
+        "parameters": [
+          {
+            "name": "workspace_handle",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "title": "Workspace Handle" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WorkspaceProfilePublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/conversations": {
+      "post": {
+        "tags": ["public"],
+        "summary": "Create Public Conversation",
+        "description": "Create a new anonymous conversation for a workspace handle.\n\nFor MVP, we do not enforce idempotency at DB level; callers may reuse\nthe same conversation or de-duplicate client-side if needed.",
+        "operationId": "public-create_public_conversation",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePublicConversationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreatePublicConversationResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/conversations/{conversation_id}/messages": {
+      "post": {
+        "tags": ["public"],
+        "summary": "Post Public Message",
+        "description": "Post a user message to a conversation.\n\nIf idempotency_key is provided and the combination already exists, return the\nexisting message. For Phase 1, we only check an optional column match.",
+        "operationId": "public-post_public_message",
+        "parameters": [
+          {
+            "name": "conversation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Conversation Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PostPublicMessageRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ConversationMessagePublic"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": ["public"],
+        "summary": "List Public Messages",
+        "operationId": "public-list_public_messages",
+        "parameters": [
+          {
+            "name": "conversation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Conversation Id"
+            }
+          },
+          {
+            "name": "_since",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "type": "string", "format": "date-time" },
+                { "type": "null" }
+              ],
+              "title": " Since"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "default": 50, "title": "Limit" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ListMessagesResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/public/conversations/{conversation_id}/stream": {
+      "get": {
+        "tags": ["public"],
+        "summary": "Stream Public Conversation",
+        "description": "Server-Sent Events (SSE) stream for assistant reply.\n\nFor MVP, we start a single agent run that streams tokens (delta events)\nand emits a final message_end with the full text, which we persist.",
+        "operationId": "public-stream_public_conversation",
+        "parameters": [
+          {
+            "name": "conversation_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Conversation Id"
+            }
+          },
+          {
+            "name": "_since",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                { "type": "string", "format": "date-time" },
+                { "type": "null" }
+              ],
+              "title": " Since"
+            }
+          },
+          {
+            "name": "request_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "title": "Request Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": { "application/json": { "schema": {} } }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cua-tasks/": {
+      "get": {
+        "tags": ["cua-tasks"],
+        "summary": "List Cua Tasks",
+        "description": "List CUA tasks for the current user's workspace.\n\nResults are ordered by created_at descending (most recent first).",
+        "operationId": "cua-tasks-list_cua_tasks",
+        "security": [{ "SupabaseBearer": [] }],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [{ "type": "string" }, { "type": "null" }],
+              "description": "Filter by status (pending, running, completed, failed, stopped, timeout)",
+              "title": "Status"
+            },
+            "description": "Filter by status (pending, running, completed, failed, stopped, timeout)"
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CuaTasksPublic" }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cua-tasks/active": {
+      "get": {
+        "tags": ["cua-tasks"],
+        "summary": "List Active Cua Tasks",
+        "description": "List active (pending or running) CUA tasks for the current user's workspace.",
+        "operationId": "cua-tasks-list_active_cua_tasks",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CuaTasksPublic" }
+              }
+            }
+          }
+        },
+        "security": [{ "SupabaseBearer": [] }]
+      }
+    },
+    "/api/v1/cua-tasks/{task_id}": {
+      "get": {
+        "tags": ["cua-tasks"],
+        "summary": "Get Cua Task",
+        "description": "Get a single CUA task by ID, including all step data.",
+        "operationId": "cua-tasks-get_cua_task",
+        "security": [{ "SupabaseBearer": [] }],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid", "title": "Task Id" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CuaTaskPublic" }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["cua-tasks"],
+        "summary": "Stop Cua Task",
+        "description": "Stop a running CUA task.\n\nThis will attempt to stop the task if it's currently running.\nNote: The actual stopping is best-effort and depends on the CUA backend.",
+        "operationId": "cua-tasks-stop_cua_task",
+        "security": [{ "SupabaseBearer": [] }],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid", "title": "Task Id" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "title": "Response Cua-Tasks-Stop Cua Task" }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cua-tasks/{task_id}/permanently": {
+      "delete": {
+        "tags": ["cua-tasks"],
+        "summary": "Delete Cua Task",
+        "description": "Permanently delete a CUA task.\n\nThis removes the task and all its step data from the database.",
+        "operationId": "cua-tasks-delete_cua_task",
+        "security": [{ "SupabaseBearer": [] }],
+        "parameters": [
+          {
+            "name": "task_id",
+            "in": "path",
+            "required": true,
+            "schema": { "type": "string", "format": "uuid", "title": "Task Id" }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": { "title": "Response Cua-Tasks-Delete Cua Task" }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/private/users/": {
       "post": {
         "tags": ["private"],
@@ -2841,6 +3425,18 @@
         "required": ["avatar"],
         "title": "Body_users-upload_avatar_me"
       },
+      "Body_workspaces-upload_workspace_profile_image": {
+        "properties": {
+          "profile_image": {
+            "type": "string",
+            "format": "binary",
+            "title": "Profile Image"
+          }
+        },
+        "type": "object",
+        "required": ["profile_image"],
+        "title": "Body_workspaces-upload_workspace_profile_image"
+      },
       "CategoryPublic": {
         "properties": {
           "id": { "type": "string", "format": "uuid", "title": "Id" },
@@ -3098,6 +3694,83 @@
         ],
         "title": "ConversationPublic"
       },
+      "ConversationSummary": {
+        "properties": {
+          "id": { "type": "string", "format": "uuid", "title": "Id" },
+          "workspace_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          },
+          "visitor_name": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Visitor Name"
+          },
+          "visitor_email": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Visitor Email"
+          },
+          "channel": { "type": "string", "title": "Channel" },
+          "status": { "type": "string", "title": "Status" },
+          "human_time_saved_minutes": {
+            "anyOf": [{ "type": "integer" }, { "type": "null" }],
+            "title": "Human Time Saved Minutes"
+          },
+          "tags": {
+            "anyOf": [
+              { "items": { "type": "string" }, "type": "array" },
+              { "type": "null" }
+            ],
+            "title": "Tags"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "message_count": {
+            "type": "integer",
+            "title": "Message Count",
+            "default": 0
+          },
+          "task_count": {
+            "type": "integer",
+            "title": "Task Count",
+            "default": 0
+          },
+          "last_message_content": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Last Message Content"
+          },
+          "last_message_role": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Last Message Role"
+          },
+          "last_message_at": {
+            "anyOf": [
+              { "type": "string", "format": "date-time" },
+              { "type": "null" }
+            ],
+            "title": "Last Message At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "workspace_id",
+          "channel",
+          "status",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "ConversationSummary",
+        "description": "Conversation summary with message count and task count for list view."
+      },
       "ConversationUpdate": {
         "properties": {
           "visitor_name": {
@@ -3142,6 +3815,276 @@
         },
         "type": "object",
         "title": "ConversationUpdate"
+      },
+      "ConversationWithTasks": {
+        "properties": {
+          "id": { "type": "string", "format": "uuid", "title": "Id" },
+          "workspace_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          },
+          "visitor_name": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Visitor Name"
+          },
+          "visitor_email": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Visitor Email"
+          },
+          "channel": { "type": "string", "title": "Channel" },
+          "status": { "type": "string", "title": "Status" },
+          "human_time_saved_minutes": {
+            "anyOf": [{ "type": "integer" }, { "type": "null" }],
+            "title": "Human Time Saved Minutes"
+          },
+          "tags": {
+            "anyOf": [
+              { "items": { "type": "string" }, "type": "array" },
+              { "type": "null" }
+            ],
+            "title": "Tags"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "tasks": {
+            "items": { "$ref": "#/components/schemas/CuaTaskSummary" },
+            "type": "array",
+            "title": "Tasks",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "workspace_id",
+          "channel",
+          "status",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "ConversationWithTasks",
+        "description": "Conversation detail with associated tasks."
+      },
+      "ConversationsListPublic": {
+        "properties": {
+          "data": {
+            "items": { "$ref": "#/components/schemas/ConversationSummary" },
+            "type": "array",
+            "title": "Data"
+          },
+          "count": { "type": "integer", "title": "Count" }
+        },
+        "type": "object",
+        "required": ["data", "count"],
+        "title": "ConversationsListPublic",
+        "description": "Paginated list of conversations with summaries."
+      },
+      "CreatePublicConversationRequest": {
+        "properties": {
+          "workspace_handle": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "title": "Workspace Handle"
+          },
+          "idempotency_key": {
+            "anyOf": [
+              { "type": "string", "maxLength": 128 },
+              { "type": "null" }
+            ],
+            "title": "Idempotency Key"
+          }
+        },
+        "type": "object",
+        "required": ["workspace_handle"],
+        "title": "CreatePublicConversationRequest"
+      },
+      "CreatePublicConversationResponse": {
+        "properties": {
+          "conversation_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Conversation Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": ["conversation_id", "created_at"],
+        "title": "CreatePublicConversationResponse"
+      },
+      "CuaTaskPublic": {
+        "properties": {
+          "id": { "type": "string", "format": "uuid", "title": "Id" },
+          "workspace_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          },
+          "conversation_id": {
+            "anyOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ],
+            "title": "Conversation Id"
+          },
+          "trace_id": { "type": "string", "title": "Trace Id" },
+          "instruction": { "type": "string", "title": "Instruction" },
+          "status": { "type": "string", "title": "Status" },
+          "model_id": { "type": "string", "title": "Model Id" },
+          "final_state": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Final State"
+          },
+          "error_message": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Error Message"
+          },
+          "steps": {
+            "items": { "additionalProperties": true, "type": "object" },
+            "type": "array",
+            "title": "Steps",
+            "default": []
+          },
+          "task_metadata": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Task Metadata",
+            "default": {}
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Started At"
+          },
+          "completed_at": {
+            "anyOf": [
+              { "type": "string", "format": "date-time" },
+              { "type": "null" }
+            ],
+            "title": "Completed At"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "workspace_id",
+          "trace_id",
+          "instruction",
+          "status",
+          "model_id",
+          "started_at",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "CuaTaskPublic",
+        "description": "Properties to return via API for CUA tasks"
+      },
+      "CuaTaskSummary": {
+        "properties": {
+          "id": { "type": "string", "format": "uuid", "title": "Id" },
+          "workspace_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Workspace Id"
+          },
+          "conversation_id": {
+            "anyOf": [
+              { "type": "string", "format": "uuid" },
+              { "type": "null" }
+            ],
+            "title": "Conversation Id"
+          },
+          "trace_id": { "type": "string", "title": "Trace Id" },
+          "instruction": { "type": "string", "title": "Instruction" },
+          "status": { "type": "string", "title": "Status" },
+          "model_id": { "type": "string", "title": "Model Id" },
+          "final_state": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Final State"
+          },
+          "error_message": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Error Message"
+          },
+          "step_count": {
+            "type": "integer",
+            "title": "Step Count",
+            "default": 0
+          },
+          "task_metadata": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Task Metadata",
+            "default": {}
+          },
+          "started_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Started At"
+          },
+          "completed_at": {
+            "anyOf": [
+              { "type": "string", "format": "date-time" },
+              { "type": "null" }
+            ],
+            "title": "Completed At"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "workspace_id",
+          "trace_id",
+          "instruction",
+          "status",
+          "model_id",
+          "started_at",
+          "created_at"
+        ],
+        "title": "CuaTaskSummary",
+        "description": "Summary view for task list (without full step data)"
+      },
+      "CuaTasksPublic": {
+        "properties": {
+          "data": {
+            "items": { "$ref": "#/components/schemas/CuaTaskSummary" },
+            "type": "array",
+            "title": "Data"
+          },
+          "count": { "type": "integer", "title": "Count" }
+        },
+        "type": "object",
+        "required": ["data", "count"],
+        "title": "CuaTasksPublic",
+        "description": "Paginated list of CUA tasks"
       },
       "EventCreate": {
         "properties": {
@@ -3316,6 +4259,27 @@
         "required": ["data", "count"],
         "title": "ItemsPublic"
       },
+      "ListMessagesResponse": {
+        "properties": {
+          "messages": {
+            "items": {
+              "$ref": "#/components/schemas/ConversationMessagePublic"
+            },
+            "type": "array",
+            "title": "Messages"
+          },
+          "next_since": {
+            "anyOf": [
+              { "type": "string", "format": "date-time" },
+              { "type": "null" }
+            ],
+            "title": "Next Since"
+          }
+        },
+        "type": "object",
+        "required": ["messages", "next_since"],
+        "title": "ListMessagesResponse"
+      },
       "Message": {
         "properties": { "message": { "type": "string", "title": "Message" } },
         "type": "object",
@@ -3366,6 +4330,27 @@
         "type": "object",
         "required": ["id", "user_id", "title", "created_at", "updated_at"],
         "title": "PostPublic"
+      },
+      "PostPublicMessageRequest": {
+        "properties": {
+          "role": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 1,
+            "title": "Role"
+          },
+          "content": { "type": "string", "minLength": 1, "title": "Content" },
+          "idempotency_key": {
+            "anyOf": [
+              { "type": "string", "maxLength": 128 },
+              { "type": "null" }
+            ],
+            "title": "Idempotency Key"
+          }
+        },
+        "type": "object",
+        "required": ["role", "content"],
+        "title": "PostPublicMessageRequest"
       },
       "PrivateUserCreate": {
         "properties": {
@@ -4190,6 +5175,37 @@
         "required": ["handle", "name", "type", "tone", "timezone"],
         "title": "WorkspaceCreate"
       },
+      "WorkspaceProfilePublic": {
+        "properties": {
+          "handle": { "type": "string", "title": "Handle" },
+          "public_name": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Public Name"
+          },
+          "subtitle": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Subtitle"
+          },
+          "description": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Description"
+          },
+          "profile_image_url": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Profile Image Url"
+          }
+        },
+        "type": "object",
+        "required": [
+          "handle",
+          "public_name",
+          "subtitle",
+          "description",
+          "profile_image_url"
+        ],
+        "title": "WorkspaceProfilePublic",
+        "description": "Public workspace profile information for display on public chat page."
+      },
       "WorkspacePublic": {
         "properties": {
           "id": { "type": "string", "format": "uuid", "title": "Id" },
@@ -4207,6 +5223,22 @@
           "knowledge_base": {
             "anyOf": [{ "type": "string" }, { "type": "null" }],
             "title": "Knowledge Base"
+          },
+          "public_name": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Public Name"
+          },
+          "subtitle": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Subtitle"
+          },
+          "description": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Description"
+          },
+          "profile_image_url": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Profile Image Url"
           },
           "created_at": {
             "type": "string",
@@ -4416,6 +5448,28 @@
           "knowledge_base": {
             "anyOf": [{ "type": "string" }, { "type": "null" }],
             "title": "Knowledge Base"
+          },
+          "public_name": {
+            "anyOf": [
+              { "type": "string", "maxLength": 255 },
+              { "type": "null" }
+            ],
+            "title": "Public Name"
+          },
+          "subtitle": {
+            "anyOf": [
+              { "type": "string", "maxLength": 255 },
+              { "type": "null" }
+            ],
+            "title": "Subtitle"
+          },
+          "description": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Description"
+          },
+          "profile_image_url": {
+            "anyOf": [{ "type": "string" }, { "type": "null" }],
+            "title": "Profile Image Url"
           }
         },
         "type": "object",

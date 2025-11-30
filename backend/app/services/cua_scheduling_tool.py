@@ -3,7 +3,9 @@
 import logging
 import os
 from typing import Any
+from uuid import UUID
 
+from app.agent.core.context import get_conversation_id, get_workspace_id
 from app.services.cua_client import CUAClientError, send_task_to_cua
 
 logger = logging.getLogger(__name__)
@@ -53,6 +55,7 @@ class CUASchedulingTool:
             date = args.get("date", "").strip()
             time = args.get("time", "").strip()
             calendly_url = args.get("calendly_url", "").strip()
+            notes = args.get("notes", "").strip()  # Optional meeting notes
 
             # Validate required fields
             if not name:
@@ -103,14 +106,22 @@ class CUASchedulingTool:
             # Format the instruction for CUA
             # This matches the format you tested successfully
             instruction = (
-                f"hi im {name}, i want to schedule an appointment for {date} at {time}, "
+                f"Hi I'm {name}, I want to schedule an appointment for {date} at {time}, "
                 f"my email is {email}: {calendly_url} "
                 f"make sure eastern time is selected since it usually defaults to UTC or something like that. "
                 f"You can click the place to select the time and there is an input box where you can write 'eastern', "
                 f"and that should show the correct one and then you can just click. also, if the specific day and time is "
                 f"not available, then just stop the task say that saying so, it will be marked as failed. no need for you search for other ways to book or anything. "
-                f"for example if the requested time is 1pm and in the options you see 12:30pm, 1:30pm, then it means the time slot is not availbale and you should stop THE task immediately saying that the time isnt avalbale."
+                f"for example if the requested time is 1pm and in the options you see 12:30pm, 1:30pm, then it means the time slot is not available and you should stop the task immediately saying that the time isnt avalbale."
             )
+
+            # Add notes if provided - Calendly usually has a textarea for meeting preparation notes
+            if notes:
+                instruction += (
+                    f" Also, there is usually a text field or textarea on the booking form asking something like "
+                    f"'Please share anything that will help prepare for our meeting' or 'Add any notes' - "
+                    f'please add the following notes there: "{notes}"'
+                )
 
             # Log all the details being sent to CUA
             logger.info("=" * 80)
@@ -120,17 +131,30 @@ class CUASchedulingTool:
             logger.info(f"  Date: {date}")
             logger.info(f"  Time: {time}")
             logger.info(f"  Calendly URL: {calendly_url}")
+            logger.info(f"  Notes: {notes if notes else '(none)'}")
             logger.info("-" * 80)
             logger.info("FULL INSTRUCTION BEING SENT TO CUA:")
             logger.info(instruction)
             logger.info("=" * 80)
 
+            # Get workspace and conversation IDs from context for task persistence
+            workspace_id: UUID | None = get_workspace_id()
+            conversation_id: UUID | None = get_conversation_id()
+
+            logger.info(
+                f"Workspace ID from context: {workspace_id}, Conversation ID: {conversation_id}"
+            )
+
             # Send task to CUA and wait for completion
+            # Ensure cua_ws_url is not None
+            ws_url = self.cua_ws_url or "ws://localhost:7860/ws"
             result = await send_task_to_cua(
                 instruction=instruction,
                 model_id=self.default_model_id,
-                cua_ws_url=self.cua_ws_url,
+                cua_ws_url=ws_url,
                 timeout_seconds=300,  # 5 minutes timeout
+                workspace_id=workspace_id,
+                conversation_id=conversation_id,
             )
 
             # Log the agent's final answer

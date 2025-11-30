@@ -59,7 +59,14 @@ async def stream_agent_reply(
             f"do NOT call the scheduling tool again unless the user explicitly requests a NEW appointment "
             f"(e.g., 'schedule another one', 'book a different time', 'I need another appointment', etc.). "
             f"If the user says 'thanks', 'great', 'ok', 'perfect', etc. after a successful scheduling, "
-            f"just acknowledge their message - do NOT schedule again."
+            f"just acknowledge their message - do NOT schedule again.\n"
+            f"7. MEETING NOTES: When scheduling, include a brief 'notes' field summarizing what the customer wants to discuss. "
+            f"This helps the business owner prepare for the meeting. Examples:\n"
+            f"   - 'Interested in AI consulting for their marketing team'\n"
+            f"   - 'Wants to discuss pricing for enterprise plan'\n"
+            f"   - 'Has questions about integration with existing CRM'\n"
+            f"   - 'Looking to automate their customer support workflow'\n"
+            f"   If the customer hasn't mentioned anything specific about what they want to discuss, leave notes empty."
         )
 
     # Convert conversation history to LangChain messages

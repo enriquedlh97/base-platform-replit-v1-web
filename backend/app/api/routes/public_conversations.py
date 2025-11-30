@@ -15,6 +15,7 @@ from pydantic import BaseModel, Field
 from sqlmodel import select
 from sqlmodel.sql._expression_select_cls import SelectOfScalar
 
+from app.agent.core.context import clear_agent_context, set_agent_context
 from app.agent.graph.graph import stream_agent_reply
 from app.agent.interfaces.http.sse import encode_sse_event
 from app.api.deps import SessionDep
@@ -53,6 +54,16 @@ class ListMessagesResponse(BaseModel):
     next_since: datetime | None
 
 
+class WorkspaceProfilePublic(BaseModel):
+    """Public workspace profile information for display on public chat page."""
+
+    handle: str
+    public_name: str | None
+    subtitle: str | None
+    description: str | None
+    profile_image_url: str | None
+
+
 def _resolve_workspace_by_handle(
     session: SessionDep, workspace_handle: str
 ) -> Workspace:
@@ -63,6 +74,26 @@ def _resolve_workspace_by_handle(
     if not workspace or not workspace.is_active:
         raise HTTPException(status_code=404, detail="Workspace not found")
     return workspace
+
+
+@router.get("/workspaces/{workspace_handle}", response_model=WorkspaceProfilePublic)
+def get_workspace_profile(
+    workspace_handle: str,
+    session: SessionDep,
+) -> Any:
+    """Get public workspace profile by handle.
+
+    Returns public profile information (name, subtitle, description, profile image)
+    for display on the public chat page. No authentication required.
+    """
+    workspace = _resolve_workspace_by_handle(session, workspace_handle)
+    return WorkspaceProfilePublic(
+        handle=workspace.handle,
+        public_name=workspace.public_name,
+        subtitle=workspace.subtitle,
+        description=workspace.description,
+        profile_image_url=workspace.profile_image_url,
+    )
 
 
 @router.post("/conversations", response_model=CreatePublicConversationResponse)
@@ -232,7 +263,7 @@ async def stream_public_conversation(
     )
     calendly_connector = session.exec(connector_statement).first()
     if calendly_connector and calendly_connector.config:
-        calendly_url = calendly_connector.config.get("link")  # type: ignore
+        calendly_url = calendly_connector.config.get("link")
 
     # Load conversation history ordered by created_at
     history_query = (
@@ -256,6 +287,13 @@ async def stream_public_conversation(
         full_text_chunks: list[str] = []
         # message_start
         yield encode_sse_event("message_start", {"message_id": str(conversation_id)})
+
+        # Set agent context for tool access to workspace/conversation IDs
+        set_agent_context(
+            workspace_id=workspace.id,
+            conversation_id=conversation_id,
+        )
+
         try:
             async for evt in stream_agent_reply(
                 workspace_knowledge_base_text=workspace.knowledge_base or "",
@@ -347,5 +385,8 @@ async def stream_public_conversation(
                 "latency_ms": latency_ms,
             },
         )
+
+        # Clear agent context after execution
+        clear_agent_context()
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
